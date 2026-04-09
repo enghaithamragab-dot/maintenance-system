@@ -1136,25 +1136,33 @@ function doLogout(){
   document.getElementById('loginCode').value='';
 }
 
-function startApp(){
+async function startApp(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('app').style.display='flex';
+
   const rb={'admin':'مدير النظام','supervisor':'مشرف ورشة','tech':'فني'};
   const rc={'admin':'role-admin','supervisor':'role-supervisor','tech':'role-tech'};
+
   document.getElementById('roleDisplay').textContent=rb[currentUser.role];
   document.getElementById('roleDisplay').className='role-badge '+rc[currentUser.role];
   document.getElementById('nameDisplay').textContent=currentUser.name;
-  // Restrict buttons by role
+
   const isAdmin=currentUser.role==='admin';
   const isSup=currentUser.role==='supervisor';
   const canEdit=isAdmin||isSup;
+
   ['addWOBtn','addSchedBtn','addInvBtn','addEmpBtn'].forEach(id=>{
     const el=document.getElementById(id);
     if(el) el.style.display=canEdit?'':'none';
   });
+
   if(currentUser.role==='tech'){
     document.getElementById('empReadonly').style.display='flex';
   }
+
+  await loadLookupsFromSupabase();
+  await loadWorkOrdersFromSupabase();
+
   fillWsFilter();
   populateDropdowns();
   refreshAll();
