@@ -946,7 +946,6 @@ function setRole(r){
     b.classList.toggle('active',['admin','supervisor','tech'][i]===r);
   });
 }
-
 async function doLogin(){
   const name = document.getElementById('loginName').value.trim();
   const code = document.getElementById('loginCode').value.trim();
@@ -996,7 +995,6 @@ async function doLogin(){
   save(KEYS.session,currentUser);
   startApp();
 }
- 
 function doLogout(){
   localStorage.removeItem(KEYS.session);
   document.getElementById('app').style.display='none';
