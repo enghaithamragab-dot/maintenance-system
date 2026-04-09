@@ -2293,5 +2293,19 @@ async function testUsers(){
 testConnection();
 testUsers();
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const supabaseUrl = "https://yecxtatudmnemeceaotl.supabase.co";
+const supabaseKey = "ضع_المفتاح_الذي_عندك_هنا";
+
+const supabaseClient = supabase.createClient(
+  supabaseUrl,
+  supabaseKey
+);
+
+console.log("Supabase connected");
+</script>
 </body>
 </html>
