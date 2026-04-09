@@ -953,48 +953,49 @@ async function doLogin(){
   const err = document.getElementById('loginError');
 
   if(!name){
-    err.style.display = 'block';
-    err.textContent = '❌ الرجاء إدخال اسمك';
+    err.style.display='block';
+    err.textContent='❌ الرجاء إدخال اسمك';
     return;
   }
 
   if(!code){
-    err.style.display = 'block';
-    err.textContent = '❌ الرجاء إدخال كود الدخول';
+    err.style.display='block';
+    err.textContent='❌ الرجاء إدخال كود الدخول';
     return;
   }
-  const roleMap = {
-  admin: 'admin',
-  supervisor: 'supervisor',
-  tech: 'technician'
-};
 
-const dbRole = roleMap[currentRoleSet];
+  const roleMap={
+    admin:'admin',
+    supervisor:'supervisor',
+    tech:'technician'
+  };
 
-const { data, error } = await supabaseClient
-  .from('user_profiles')
-  .select('*')
-  .eq('full_name', name)
-  .eq('role', dbRole)
-  .single();
+  const dbRole=roleMap[currentRoleSet];
 
-if (error || !data) {
-  err.style.display = 'block';
-  err.textContent = '❌ المستخدم غير موجود';
-  return;
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('*')
+    .eq('full_name',name)
+    .eq('role',dbRole)
+    .single();
+
+  if(error || !data){
+    err.style.display='block';
+    err.textContent='❌ المستخدم غير موجود';
+    return;
+  }
+
+  err.style.display='none';
+
+  currentUser={
+    role:currentRoleSet,
+    name:data.full_name,
+    email:data.email
+  };
+
+  save(KEYS.session,currentUser);
+  startApp();
 }
-
-err.style.display = 'none';
-
-currentUser = {
-  role: currentRoleSet,
-  name: data.full_name,
-  email: data.email
-};
-
-save(KEYS.session,currentUser);
-startApp();
-
   const roleMap = {
     admin: 'admin',
     supervisor: 'supervisor',
