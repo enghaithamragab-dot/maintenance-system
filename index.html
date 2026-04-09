@@ -248,7 +248,7 @@ tr:hover td{background:var(--bg3);}
     <div class="login-logo">
       <span class="icon">⚙</span>
       <h1>نظام إدارة الصيانة</h1>
-      <p>شركة دلتا — المعدات الهندسية والمولدات</p>
+      <p>شركة دلتا — الحرس الوطني </p>
     </div>
     <div class="login-tabs">
       <button class="login-tab active" onclick="setRole('admin')">مدير النظام</button>
@@ -947,16 +947,62 @@ function setRole(r){
   });
 }
 
-function doLogin(){
-  const name=document.getElementById('loginName').value.trim();
-  const code=document.getElementById('loginCode').value.trim();
-  const err=document.getElementById('loginError');
-  if(!name){err.style.display='block';err.textContent='❌ الرجاء إدخال اسمك';return;}
-  if(code!==CODES[currentRoleSet]){err.style.display='block';err.textContent='❌ كود الدخول غير صحيح';return;}
-  err.style.display='none';
-  currentUser={role:currentRoleSet,name};
-  save(KEYS.session,currentUser);
-  startApp();
+async function doLogin(){
+  const name = document.getElementById('loginName').value.trim();
+  const code = document.getElementById('loginCode').value.trim();
+  const err = document.getElementById('loginError');
+
+  if(!name){
+    err.style.display = 'block';
+    err.textContent = '❌ الرجاء إدخال اسمك';
+    return;
+  }
+
+  if(!code){
+    err.style.display = 'block';
+    err.textContent = '❌ الرجاء إدخال كود الدخول';
+    return;
+  }
+
+  const roleMap = {
+    admin: 'admin',
+    supervisor: 'supervisor',
+    tech: 'technician'
+  };
+
+  const dbRole = roleMap[currentRoleSet];
+
+  try {
+    const { data, error } = await supabaseClient
+      .from('user_profiles')
+      .select('*')
+      .eq('full_name', name)
+      .eq('role', dbRole)
+      .single();
+
+    if (error || !data) {
+      err.style.display = 'block';
+      err.textContent = '❌ المستخدم غير موجود أو الدور غير مطابق';
+      return;
+    }
+
+    err.style.display = 'none';
+
+    currentUser = {
+      role: currentRoleSet,
+      name: data.full_name,
+      email: data.email,
+      profileId: data.id
+    };
+
+    save(KEYS.session, currentUser);
+    startApp();
+
+  } catch (e) {
+    err.style.display = 'block';
+    err.textContent = '❌ حدث خطأ أثناء تسجيل الدخول';
+    console.error(e);
+  }
 }
 
 function doLogout(){
