@@ -2298,9 +2298,9 @@ testUsers();
 
 <script>
 const supabaseUrl = "https://yecxtatudmnemeceaotl.supabase.co";
-const supabaseKey = "ضع_المفتاح_الذي_عندك_هنا";
+const supabaseKey = "YOUR_SUPABASE_ANON_KEY";
 
-const supabaseClient = supabase.createClient(
+window.supabaseClient = supabase.createClient(
   supabaseUrl,
   supabaseKey
 );
