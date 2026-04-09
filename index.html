@@ -1004,12 +1004,12 @@ startApp();
   const dbRole = roleMap[currentRoleSet];
 
   try {
-    const { data, error } = await supabaseClient
-      .from('user_profiles')
-      .select('*')
-      .eq('full_name', name)
-      .eq('role', dbRole)
-      .single();
+  const { data, error } = await supabase
+  .from('user_profiles')
+  .select('*')
+  .eq('full_name', name)
+  .eq('role', dbRole)
+  .single();
 
     if (error || !data) {
       err.style.display = 'block';
