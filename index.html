@@ -2089,11 +2089,11 @@ window.addEventListener('DOMContentLoaded',()=>{
 const supabaseUrl = "https://yecxtatudmnemeceaotl.supabase.co";
 const supabaseKey = "sb_publishable_EJ8ehD7Gmmf5_RntDS9Oeg_aTQNrouZ";
 
-const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
 async function testConnection(){
 
-const { data, error } = await supabase
+const { data, error } = await supabaseClient
 .from("workshops")
 .select("*");
 
