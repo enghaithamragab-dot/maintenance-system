@@ -817,6 +817,132 @@ const KEYS = {
   wo:'maint_wo', inv:'maint_inv', emp:'maint_emp',
   mov:'maint_mov', sched:'maint_sched', session:'maint_session'
 };
+  let DB = {
+  workOrders: [],
+  workshops: [],
+  equipment: [],
+  users: []
+};
+
+async function loadLookupsFromSupabase(){
+  const [wsRes, eqRes, userRes] = await Promise.all([
+    supabaseClient.from('workshops').select('*').order('name'),
+    supabaseClient.from('equipment').select('*').order('equipment_code'),
+    supabaseClient.from('user_profiles').select('id,full_name,role,email,workshop_id').order('full_name')
+  ]);
+
+  DB.workshops = wsRes.data || [];
+  DB.equipment = eqRes.data || [];
+  DB.users = userRes.data || [];
+}
+
+async function loadWorkOrdersFromSupabase(){
+  const { data, error } = await supabaseClient
+    .from('work_orders')
+    .select(`
+      id,
+      order_no,
+      title,
+      description,
+      maintenance_type,
+      priority,
+      status,
+      progress,
+      start_date,
+      due_date,
+      completed_at,
+      workshop_id,
+      equipment_id,
+      assigned_to,
+      workshops(name, region),
+      equipment(equipment_code, name),
+      assigned_user:user_profiles!work_orders_assigned_to_fkey(full_name)
+    `)
+    .order('created_at', { ascending: false });
+
+  if(error){
+    console.error('loadWorkOrdersFromSupabase error:', error);
+    return [];
+  }
+
+  DB.workOrders = (data || []).map(row => ({
+    id: row.order_no,
+    dbId: row.id,
+    equipment: row.equipment?.name || 'غير محدد',
+    equipmentId: row.equipment?.equipment_code || '',
+    maintType: mapMaintTypeFromDb(row.maintenance_type),
+    status: mapStatusFromDb(row.status),
+    priority: mapPriorityFromDb(row.priority),
+    regionId: row.workshops?.region || '',
+    regionName: mapRegionName(row.workshops?.region),
+    workshopId: row.workshop_id || '',
+    workshopName: row.workshops?.name || '',
+    techName: row.assigned_user?.full_name || 'غير محدد',
+    description: row.description || '',
+    startDate: row.start_date || '',
+    endDate: row.due_date || '',
+    progress: row.progress || 0,
+    notes: row.title || '',
+    createdAt: row.start_date || ''
+  }));
+
+  return DB.workOrders;
+}
+
+function mapRegionName(region){
+  if(region === 'central') return 'المنطقة الوسطى';
+  if(region === 'western') return 'المنطقة الغربية';
+  if(region === 'eastern') return 'المنطقة الشرقية';
+  return '';
+}
+
+function mapMaintTypeFromDb(v){
+  if(v === 'preventive') return 'صيانة وقائية';
+  if(v === 'corrective') return 'صيانة تصحيحية';
+  if(v === 'emergency') return 'إصلاح طارئ';
+  if(v === 'inspection') return 'معايرة وفحص';
+  return 'صيانة تصحيحية';
+}
+
+function mapMaintTypeToDb(v){
+  if(v === 'صيانة وقائية') return 'preventive';
+  if(v === 'صيانة تصحيحية') return 'corrective';
+  if(v === 'إصلاح طارئ') return 'emergency';
+  if(v === 'معايرة وفحص') return 'inspection';
+  return 'corrective';
+}
+
+function mapStatusFromDb(v){
+  if(v === 'open') return 'معلق';
+  if(v === 'in_progress') return 'قيد التنفيذ';
+  if(v === 'completed') return 'مكتمل';
+  if(v === 'on_hold') return 'معلق';
+  if(v === 'cancelled') return 'معلق';
+  return 'معلق';
+}
+
+function mapStatusToDb(v){
+  if(v === 'قيد التنفيذ') return 'in_progress';
+  if(v === 'مكتمل') return 'completed';
+  if(v === 'معلق') return 'on_hold';
+  if(v === 'طارئ') return 'open';
+  return 'open';
+}
+
+function mapPriorityToDb(v){
+  if(v === 'طارئ') return 'critical';
+  if(v === 'عالي') return 'high';
+  if(v === 'عادي') return 'normal';
+  return 'normal';
+}
+
+function mapPriorityFromDb(v){
+  if(v === 'critical') return 'طارئ';
+  if(v === 'high') return 'عالي';
+  if(v === 'normal') return 'عادي';
+  if(v === 'low') return 'عادي';
+  return 'عادي';
+}
 
 function load(key){try{return JSON.parse(localStorage.getItem(key))||null}catch{return null}}
 function save(key,data){localStorage.setItem(key,JSON.stringify(data))}
