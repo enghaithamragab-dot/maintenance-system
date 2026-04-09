@@ -2241,7 +2241,7 @@ function showConfirm(msg,cb){
   document.getElementById('confirmOkBtn').onclick=()=>{cb();closeModal('confirmModal');};
   openModal('confirmModal');
 }
-<script>
+
 // ===================================================================
 // INIT
 // ===================================================================
@@ -2258,9 +2258,6 @@ window.addEventListener('DOMContentLoaded', async ()=>{
   if(sess && sess.role && sess.name){
     currentUser = sess;
     currentRoleSet = sess.role;
-  }
-
-  if(sess && sess.role && sess.name){
     await startApp();
   }
 });
@@ -2278,7 +2275,6 @@ async function testConnection(){
   const { data, error } = await supabaseClient
     .from("workshops")
     .select("*");
-
   console.log("Supabase connection:", data, error);
 }
 
@@ -2286,26 +2282,11 @@ async function testUsers(){
   const { data, error } = await supabaseClient
     .from("user_profiles")
     .select("*");
-
   console.log("Users:", data, error);
 }
 
 testConnection();
 testUsers();
-</script>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-const supabaseUrl = "https://yecxtatudmnemeceaotl.supabase.co";
-const supabaseKey = "YOUR_SUPABASE_ANON_KEY";
-
-window.supabaseClient = supabase.createClient(
-  supabaseUrl,
-  supabaseKey
-);
-
-console.log("Supabase connected");
 </script>
 </body>
 </html>
