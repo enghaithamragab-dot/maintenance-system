@@ -2233,39 +2233,52 @@ function showConfirm(msg,cb){
   document.getElementById('confirmOkBtn').onclick=()=>{cb();closeModal('confirmModal');};
   openModal('confirmModal');
 }
-
+<script>
 // ===================================================================
 // INIT
 // ===================================================================
-window.addEventListener('DOMContentLoaded',()=>{
-  // Save session before version check clears storage
-  const savedSess=load(KEYS.session);
+window.addEventListener('DOMContentLoaded', async () => {
+  const savedSess = load(KEYS.session);
   checkVersion();
-  // Restore session if it existed
-  if(savedSess) save(KEYS.session,savedSess);
+
+  if (savedSess) save(KEYS.session, savedSess);
+
   seedData();
-  const sess=load(KEYS.session);
-  if(sess&&sess.role&&sess.name){
-    currentUser=sess;
-    currentRoleSet=sess.role;
+
+  const sess = load(KEYS.session);
+  if (sess && sess.role && sess.name) {
+    currentUser = sess;
+    currentRoleSet = sess.role;
+  }
+
+  // تحميل مكتبة Supabase وتشغيل الربط
+  const supabaseUrl = "https://yecxtatudmnemeceaotl.supabase.co";
+  const supabaseKey = "sb_publishable_EJ8ehD7Gmmf5_RntDS9Oeg_aTQNrouZ";
+
+  window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+  try {
+    const { data: wsData, error: wsError } = await window.supabaseClient
+      .from("workshops")
+      .select("*");
+
+    console.log("Supabase connection:", wsData, wsError);
+
+    const { data: usersData, error: usersError } = await window.supabaseClient
+      .from("user_profiles")
+      .select("*");
+
+    console.log("Users:", usersData, usersError);
+  } catch (e) {
+    console.error("Supabase init error:", e);
+  }
+
+  if (sess && sess.role && sess.name) {
     startApp();
   }
 });
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
-<script>
-
-const supabaseUrl = "https://yecxtatudmnemeceaotl.supabase.co";
-const supabaseKey = "sb_publishable_EJ8ehD7Gmmf5_RntDS90eg_aTQNrouZ";
-
-const supabaseClient = window.supabase.createClient(
-  supabaseUrl,
-  supabaseKey
-);
-
-</script>
-
 </body>
 </html>
