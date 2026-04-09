@@ -826,9 +826,9 @@ const KEYS = {
 
 async function loadLookupsFromSupabase(){
   const [wsRes, eqRes, userRes] = await Promise.all([
-    supabaseClient.from('workshops').select('*').order('name'),
-    supabaseClient.from('equipment').select('*').order('equipment_code'),
-    supabaseClient.from('user_profiles').select('id,full_name,role,email,workshop_id').order('full_name')
+    window.supabaseClient.from('workshops').select('*').order('name'),
+    window.supabaseClient.from('equipment').select('*').order('equipment_code'),
+    window.supabaseClient.from('user_profiles').select('id,full_name,role,email,workshop_id').order('full_name')
   ]);
 
   DB.workshops = wsRes.data || [];
@@ -837,7 +837,7 @@ async function loadLookupsFromSupabase(){
 }
 
 async function loadWorkOrdersFromSupabase(){
-  const { data, error } = await supabaseClient
+  const { data, error } = await window.supabaseClient
     .from('work_orders')
     .select(`
       id,
@@ -2245,48 +2245,56 @@ function showConfirm(msg,cb){
 // ===================================================================
 // INIT
 // ===================================================================
-window.addEventListener('DOMContentLoaded', async () => {
+window.addEventListener('DOMContentLoaded', async ()=>{
   const savedSess = load(KEYS.session);
   checkVersion();
 
-  if (savedSess) save(KEYS.session, savedSess);
+  if(savedSess) save(KEYS.session, savedSess);
 
   seedData();
 
   const sess = load(KEYS.session);
-  if (sess && sess.role && sess.name) {
+
+  if(sess && sess.role && sess.name){
     currentUser = sess;
     currentRoleSet = sess.role;
   }
 
-  // تحميل مكتبة Supabase وتشغيل الربط
-  const supabaseUrl = "https://yecxtatudmnemeceaotl.supabase.co";
-  const supabaseKey = "sb_publishable_EJ8ehD7Gmmf5_RntDS9Oeg_aTQNrouZ";
-
-  window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
-
-  try {
-    const { data: wsData, error: wsError } = await window.supabaseClient
-      .from("workshops")
-      .select("*");
-
-    console.log("Supabase connection:", wsData, wsError);
-
-    const { data: usersData, error: usersError } = await window.supabaseClient
-      .from("user_profiles")
-      .select("*");
-
-    console.log("Users:", usersData, usersError);
-  } catch (e) {
-    console.error("Supabase init error:", e);
+  try{
+    await loadLookupsFromSupabase();
+    await loadWorkOrdersFromSupabase();
+  }catch(e){
+    console.error('Initial Supabase load error:', e);
   }
 
-  if (sess && sess.role && sess.name) {
-    startApp();
+  if(sess && sess.role && sess.name){
+    await startApp();
   }
 });
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const supabaseUrl = "https://yecxtatudmnemeceaotl.supabase.co";
+const supabaseKey = "sb_publishable_EJ8ehD7Gmmf5_RntDS9Oeg_aTQNrouZ";
+window.supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+async function testConnection(){
+  const { data, error } = await window.supabaseClient
+    .from("workshops")
+    .select("*");
+  console.log("Supabase connection:", data, error);
+}
+
+async function testUsers(){
+  const { data, error } = await window.supabaseClient
+    .from("user_profiles")
+    .select("*");
+  console.log("Users:", data, error);
+}
+
+testConnection();
+testUsers();
+</script>
 </body>
 </html>
