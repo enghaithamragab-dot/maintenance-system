@@ -1,0 +1,2086 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام إدارة الصيانة — شركة دلتا</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800;900&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#060d1a;--bg2:#0b1628;--bg3:#111e35;--bg4:#172340;
+  --border:#1c2e4a;--border2:#243856;
+  --text:#e8f0fe;--text2:#8ba3c7;--text3:#4a6385;
+  --blue:#3d8ef8;--blue2:#1a5fc4;--green:#22d47a;--amber:#f5a623;
+  --red:#f04d4d;--purple:#9b72ef;--cyan:#22d4d4;
+  --shadow:0 8px 32px rgba(0,0,0,0.5);
+}
+body{background:var(--bg);color:var(--text);font-family:'Tajawal',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* ===== LOGIN ===== */
+#loginScreen{display:flex;align-items:center;justify-content:center;min-height:100vh;
+  background:radial-gradient(ellipse at 30% 20%,#0d2040 0%,var(--bg) 60%);}
+.login-box{background:var(--bg2);border:1px solid var(--border2);border-radius:20px;
+  padding:40px;width:380px;box-shadow:var(--shadow);}
+.login-logo{text-align:center;margin-bottom:28px;}
+.login-logo .icon{font-size:48px;display:block;margin-bottom:8px;}
+.login-logo h1{font-size:20px;font-weight:800;color:var(--text);}
+.login-logo p{font-size:12px;color:var(--text3);margin-top:4px;}
+.login-tabs{display:flex;background:var(--bg3);border-radius:10px;margin-bottom:24px;padding:4px;gap:4px;}
+.login-tab{flex:1;padding:8px;border:none;background:none;color:var(--text3);
+  border-radius:8px;cursor:pointer;font-family:'Tajawal',sans-serif;font-size:13px;transition:.2s;}
+.login-tab.active{background:var(--blue2);color:#fff;font-weight:600;}
+.login-field{margin-bottom:16px;}
+.login-field label{display:block;font-size:12px;color:var(--text2);margin-bottom:6px;font-weight:600;}
+.login-field input{width:100%;background:var(--bg3);border:1px solid var(--border2);
+  border-radius:10px;padding:11px 14px;color:var(--text);font-family:'Tajawal',sans-serif;
+  font-size:14px;outline:none;transition:.2s;}
+.login-field input:focus{border-color:var(--blue);}
+.login-hint{background:var(--bg3);border:1px solid var(--border);border-radius:10px;
+  padding:12px;margin-bottom:16px;font-size:12px;color:var(--text3);}
+.login-hint span{color:var(--amber);font-weight:700;}
+.login-btn{width:100%;padding:13px;background:linear-gradient(135deg,var(--blue2),var(--blue));
+  border:none;border-radius:10px;color:#fff;font-family:'Tajawal',sans-serif;
+  font-size:15px;font-weight:700;cursor:pointer;transition:.2s;}
+.login-btn:hover{opacity:.9;transform:translateY(-1px);}
+.login-error{background:#f04d4d18;border:1px solid #f04d4d44;border-radius:8px;
+  padding:10px;color:var(--red);font-size:13px;margin-bottom:12px;display:none;}
+
+/* ===== APP ===== */
+#app{display:none;flex-direction:column;min-height:100vh;}
+
+/* HEADER */
+.hdr{background:var(--bg2);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 20px;height:58px;position:sticky;top:0;z-index:200;}
+.hdr-logo{display:flex;align-items:center;gap:10px;}
+.hdr-logo .hicon{font-size:22px;color:var(--blue);}
+.hdr-logo h2{font-size:15px;font-weight:800;color:var(--text);}
+.hdr-logo span{font-size:11px;color:var(--text3);}
+.hdr-right{display:flex;align-items:center;gap:10px;}
+.user-chip{display:flex;align-items:center;gap:8px;background:var(--bg3);
+  border:1px solid var(--border);border-radius:20px;padding:5px 12px;}
+.user-chip .role-badge{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:700;}
+.role-admin{background:#3d8ef822;color:var(--blue);}
+.role-supervisor{background:#f5a62322;color:var(--amber);}
+.role-tech{background:#22d47a22;color:var(--green);}
+.user-name{font-size:13px;font-weight:600;}
+.hdr-filter{display:flex;gap:8px;}
+.hdr-select{background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  color:var(--text2);padding:5px 10px;font-family:'Tajawal',sans-serif;font-size:12px;cursor:pointer;}
+.logout-btn{background:none;border:1px solid var(--border);border-radius:8px;
+  color:var(--text3);padding:5px 12px;cursor:pointer;font-size:12px;
+  font-family:'Tajawal',sans-serif;transition:.2s;}
+.logout-btn:hover{color:var(--red);border-color:var(--red);}
+
+/* NAV */
+.nav{background:var(--bg3);border-bottom:1px solid var(--border);
+  display:flex;gap:2px;padding:0 16px;overflow-x:auto;}
+.nav-btn{display:flex;align-items:center;gap:7px;padding:13px 16px;
+  border:none;background:none;color:var(--text3);cursor:pointer;
+  font-family:'Tajawal',sans-serif;font-size:13px;font-weight:500;
+  border-bottom:2px solid transparent;white-space:nowrap;transition:.2s;}
+.nav-btn:hover{color:var(--text2);}
+.nav-btn.active{color:var(--blue);border-bottom-color:var(--blue);}
+.nav-btn .ni{font-size:15px;}
+.nav-btn .badge{background:var(--red);color:#fff;border-radius:10px;
+  padding:1px 6px;font-size:10px;font-weight:700;}
+
+/* MAIN */
+.main{padding:20px;max-width:1600px;margin:0 auto;}
+.page{display:none;}
+.page.active{display:block;}
+
+/* CARDS & GRIDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;padding:18px;}
+.card-title{font-size:12px;font-weight:700;color:var(--text3);
+  text-transform:uppercase;letter-spacing:.8px;margin-bottom:16px;}
+.grid-5{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px;}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:20px;}
+.grid-2{display:grid;grid-template-columns:repeat(auto-fit,minmax(340px,1fr));gap:16px;margin-bottom:20px;}
+
+/* KPI */
+.kpi{background:var(--bg2);border:1px solid var(--border);border-radius:14px;
+  padding:16px;border-top:3px solid;}
+.kpi-val{font-size:30px;font-weight:900;line-height:1;margin-bottom:4px;}
+.kpi-label{font-size:12px;color:var(--text3);font-weight:600;}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:4px;}
+
+/* TABLES */
+.tbl-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+th{padding:10px 12px;text-align:right;color:var(--text3);font-size:11px;
+  font-weight:700;text-transform:uppercase;letter-spacing:.5px;
+  border-bottom:1px solid var(--border);background:var(--bg2);white-space:nowrap;}
+td{padding:10px 12px;color:var(--text2);border-bottom:1px solid var(--bg3);white-space:nowrap;}
+tr:hover td{background:var(--bg3);}
+
+/* BADGES */
+.badge{display:inline-block;padding:3px 9px;border-radius:6px;
+  font-size:11px;font-weight:700;white-space:nowrap;}
+.b-blue{background:#3d8ef820;color:var(--blue);}
+.b-green{background:#22d47a20;color:var(--green);}
+.b-amber{background:#f5a62320;color:var(--amber);}
+.b-red{background:#f04d4d20;color:var(--red);}
+.b-purple{background:#9b72ef20;color:var(--purple);}
+.b-cyan{background:#22d4d420;color:var(--cyan);}
+.b-gray{background:#4a638520;color:var(--text3);}
+
+/* CONTROLS */
+.controls{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.search{background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  color:var(--text);padding:9px 14px;font-family:'Tajawal',sans-serif;
+  font-size:13px;outline:none;flex:1;min-width:200px;}
+.search:focus{border-color:var(--blue);}
+.fsel{background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  color:var(--text2);padding:9px 12px;font-family:'Tajawal',sans-serif;
+  font-size:13px;cursor:pointer;outline:none;}
+.btn{padding:9px 18px;border-radius:10px;border:1px solid;cursor:pointer;
+  font-family:'Tajawal',sans-serif;font-size:13px;font-weight:600;transition:.15s;}
+.btn:hover{opacity:.85;transform:translateY(-1px);}
+.btn-blue{background:#3d8ef820;color:var(--blue);border-color:#3d8ef840;}
+.btn-green{background:#22d47a20;color:var(--green);border-color:#22d47a40;}
+.btn-red{background:#f04d4d20;color:var(--red);border-color:#f04d4d40;}
+.btn-amber{background:#f5a62320;color:var(--amber);border-color:#f5a62340;}
+.btn-purple{background:#9b72ef20;color:var(--purple);border-color:#9b72ef40;}
+.btn-sm{padding:5px 10px;font-size:12px;border-radius:7px;}
+
+/* PROGRESS */
+.prog-track{height:6px;background:var(--bg3);border-radius:3px;overflow:hidden;}
+.prog-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--green));border-radius:3px;}
+.prog-txt{font-size:11px;color:var(--text3);}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:500;
+  display:none;align-items:center;justify-content:center;padding:20px;}
+.overlay.show{display:flex;}
+.modal{background:var(--bg2);border:1px solid var(--border2);border-radius:18px;
+  padding:24px;max-width:620px;width:100%;max-height:90vh;overflow-y:auto;
+  box-shadow:var(--shadow);}
+.modal-lg{max-width:820px;}
+.modal-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;}
+.modal-title{font-size:16px;font-weight:800;color:var(--text);}
+.close-btn{background:var(--bg3);border:none;color:var(--text2);
+  width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px;
+  display:flex;align-items:center;justify-content:center;}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.form-full{grid-column:1/-1;}
+.fg{display:flex;flex-direction:column;gap:6px;}
+.fg label{font-size:12px;color:var(--text3);font-weight:700;}
+.fg input,.fg select,.fg textarea{background:var(--bg3);border:1px solid var(--border2);
+  border-radius:10px;color:var(--text);padding:10px 13px;
+  font-family:'Tajawal',sans-serif;font-size:13px;outline:none;transition:.2s;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue);}
+.fg textarea{resize:vertical;min-height:70px;}
+.modal-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;}
+
+/* ALERT BOX */
+.alert{display:flex;align-items:center;gap:10px;padding:11px 16px;
+  border-radius:10px;margin-bottom:16px;font-size:13px;}
+.alert-red{background:#f04d4d15;border:1px solid #f04d4d30;color:var(--red);}
+.alert-amber{background:#f5a62315;border:1px solid #f5a62330;color:var(--amber);}
+.alert-green{background:#22d47a15;border:1px solid #22d47a30;color:var(--green);}
+
+/* TABS WITHIN PAGES */
+.page-tabs{display:flex;gap:4px;background:var(--bg3);border-radius:10px;
+  padding:4px;margin-bottom:20px;width:fit-content;}
+.page-tab{padding:8px 18px;border:none;background:none;color:var(--text3);
+  border-radius:8px;cursor:pointer;font-family:'Tajawal',sans-serif;
+  font-size:13px;font-weight:500;transition:.2s;}
+.page-tab.active{background:var(--blue2);color:#fff;font-weight:700;}
+
+/* TECH CARDS */
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px;}
+.tech-card{background:var(--bg2);border:1px solid var(--border);border-radius:14px;
+  padding:16px;text-align:center;cursor:pointer;transition:.2s;}
+.tech-card:hover{border-color:var(--blue);transform:translateY(-2px);}
+.tech-avatar{width:52px;height:52px;border-radius:50%;background:var(--bg3);
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+  font-weight:800;margin:0 auto 10px;border:2px solid;}
+.tech-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:3px;}
+.tech-role{font-size:11px;color:var(--text3);margin-bottom:6px;line-height:1.4;}
+.tech-ws{font-size:11px;color:var(--text3);margin-bottom:8px;}
+.tech-meta{display:flex;justify-content:center;gap:14px;font-size:12px;color:var(--text2);}
+
+/* INVENTORY MOVEMENT HISTORY */
+.mov-item{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+.mov-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.mov-in{background:#22d47a18;color:var(--green);}
+.mov-out{background:#f04d4d18;color:var(--red);}
+.mov-ret{background:#f5a62318;color:var(--amber);}
+.mov-info{flex:1;}
+.mov-name{font-size:13px;font-weight:600;color:var(--text);}
+.mov-detail{font-size:11px;color:var(--text3);margin-top:2px;}
+.mov-qty{font-weight:800;font-size:15px;}
+
+/* DONUT CHART */
+.donut-wrap{display:flex;align-items:center;gap:20px;}
+.donut-legend{display:flex;flex-direction:column;gap:9px;}
+.legend-row{display:flex;align-items:center;gap:8px;font-size:13px;}
+.legend-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;}
+
+/* READONLY notice */
+.readonly-notice{background:var(--bg3);border:1px solid var(--border);border-radius:8px;
+  padding:10px 14px;font-size:12px;color:var(--text3);margin-bottom:16px;
+  display:flex;align-items:center;gap:8px;}
+
+/* PRINT */
+@media print{
+  .hdr,.nav,.controls,.modal,.overlay,.btn,.logout-btn{display:none!important;}
+  body{background:#fff;color:#000;}
+  .card{border:1px solid #ccc;}
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:var(--bg);}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+
+/* TOOLTIP */
+[title]{position:relative;cursor:help;}
+</style>
+</head>
+<body>
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <span class="icon">⚙</span>
+      <h1>نظام إدارة الصيانة</h1>
+      <p>شركة دلتا — المعدات الهندسية والمولدات</p>
+    </div>
+    <div class="login-tabs">
+      <button class="login-tab active" onclick="setRole('admin')">مدير النظام</button>
+      <button class="login-tab" onclick="setRole('supervisor')">مشرف ورشة</button>
+      <button class="login-tab" onclick="setRole('tech')">فني</button>
+    </div>
+
+    <div class="login-field">
+      <label>الاسم</label>
+      <input id="loginName" type="text" placeholder="أدخل اسمك...">
+    </div>
+    <div class="login-field">
+      <label>كود الدخول</label>
+      <input id="loginCode" type="password" placeholder="أدخل الكود...">
+    </div>
+    <div id="loginError" class="login-error">❌ كود الدخول غير صحيح</div>
+    <button class="login-btn" onclick="doLogin()">دخول ←</button>
+  </div>
+</div>
+
+<!-- ===== APP ===== -->
+<div id="app">
+  <!-- HEADER -->
+  <header class="hdr">
+    <div class="hdr-logo">
+      <span class="hicon">⚙</span>
+      <div>
+        <h2>نظام إدارة الصيانة — شركة دلتا</h2>
+        <span>المعدات الهندسية والمولدات الكهربائية</span>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <div class="hdr-filter">
+        <select class="hdr-select" id="regionFilter" onchange="applyFilters()">
+          <option value="all">🗺 جميع المناطق</option>
+          <option value="central">المنطقة الوسطى</option>
+          <option value="western">المنطقة الغربية</option>
+          <option value="eastern">المنطقة الشرقية</option>
+        </select>
+        <select class="hdr-select" id="wsFilter" onchange="applyFilters()">
+          <option value="all">جميع الورش</option>
+        </select>
+      </div>
+      <div class="user-chip">
+        <span id="roleDisplay" class="role-badge"></span>
+        <span id="nameDisplay" class="user-name"></span>
+      </div>
+      <button class="logout-btn" onclick="doLogout()">خروج ↩</button>
+    </div>
+  </header>
+
+  <!-- NAV -->
+  <nav class="nav">
+    <button class="nav-btn active" onclick="showPage('dashboard')" id="nav-dashboard">
+      <span class="ni">⬡</span> لوحة القيادة
+    </button>
+    <button class="nav-btn" onclick="showPage('workorders')" id="nav-workorders">
+      <span class="ni">⚙</span> أوامر العمل
+    </button>
+    <button class="nav-btn" onclick="showPage('schedule')" id="nav-schedule">
+      <span class="ni">◎</span> الصيانة الدورية
+    </button>
+    <button class="nav-btn" onclick="showPage('inventory')" id="nav-inventory">
+      <span class="ni">▦</span> المستودع
+      <span class="badge" id="lowStockBadge" style="display:none">!</span>
+    </button>
+    <button class="nav-btn" onclick="showPage('movements')" id="nav-movements">
+      <span class="ni">↕</span> حركات المستودع
+    </button>
+    <button class="nav-btn" onclick="showPage('employees')" id="nav-employees">
+      <span class="ni">◈</span> الموظفون
+    </button>
+    <button class="nav-btn" onclick="showPage('reports')" id="nav-reports">
+      <span class="ni">▤</span> التقارير
+    </button>
+  </nav>
+
+  <main class="main">
+
+    <!-- ===== DASHBOARD ===== -->
+    <div class="page active" id="page-dashboard">
+      <div class="grid-5" id="kpiRow"></div>
+      <div class="grid-3">
+        <div class="card">
+          <div class="card-title">الإنجاز الكلي</div>
+          <div class="donut-wrap">
+            <svg id="donutChart" width="120" height="120" viewBox="0 0 120 120"></svg>
+            <div class="donut-legend" id="donutLegend"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">نوع الصيانة</div>
+          <div id="typeChart"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">أداء المناطق</div>
+          <div id="regionChart"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title" style="display:flex;justify-content:space-between">
+          <span>أحدث أوامر العمل</span>
+          <button class="btn btn-blue btn-sm" onclick="showPage('workorders')">عرض الكل</button>
+        </div>
+        <div class="tbl-wrap"><table id="dashWOTable"></table></div>
+      </div>
+      <div class="grid-2" style="margin-top:16px">
+        <div class="card">
+          <div class="card-title">⚠ مواد المستودع المنخفضة</div>
+          <div id="dashLowStock"></div>
+        </div>
+        <div class="card">
+          <div class="card-title">📋 آخر حركات المستودع</div>
+          <div id="dashMovements"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== WORK ORDERS ===== -->
+    <div class="page" id="page-workorders">
+      <div class="controls">
+        <input class="search" id="woSearch" placeholder="🔍  بحث..." oninput="renderWO()">
+        <select class="fsel" id="woStatusFilter" onchange="renderWO()">
+          <option value="all">جميع الحالات</option>
+          <option>قيد التنفيذ</option><option>مكتمل</option>
+          <option>معلق</option><option>طارئ</option>
+        </select>
+        <select class="fsel" id="woTypeFilter" onchange="renderWO()">
+          <option value="all">جميع الأنواع</option>
+          <option>صيانة وقائية</option><option>صيانة تصحيحية</option>
+          <option>إصلاح طارئ</option><option>معايرة وفحص</option>
+        </select>
+        <button class="btn btn-blue" id="addWOBtn" onclick="openModal('woModal')">+ أمر عمل جديد</button>
+      </div>
+      <div class="card">
+        <div class="tbl-wrap"><table id="woTable"></table></div>
+      </div>
+    </div>
+
+    <!-- ===== SCHEDULE ===== -->
+    <div class="page" id="page-schedule">
+      <div class="grid-5" id="schedKPIs" style="margin-bottom:20px"></div>
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title" style="display:flex;justify-content:space-between;align-items:center">
+          <span>جدول الصيانات الدورية</span>
+          <button class="btn btn-blue btn-sm" id="addSchedBtn" onclick="openModal('schedModal')">+ إضافة موعد</button>
+        </div>
+        <div class="tbl-wrap"><table id="schedTable"></table></div>
+      </div>
+      <div class="card">
+        <div class="card-title">دليل فترات الصيانة الوقائية</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px">
+          <div style="background:var(--bg3);border-radius:10px;padding:14px">
+            <div style="color:var(--blue);font-weight:700;margin-bottom:8px">يومي</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.8">• فحص مستوى الزيت<br>• فحص درجة الحرارة<br>• تنظيف الفلاتر</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:10px;padding:14px">
+            <div style="color:var(--green);font-weight:700;margin-bottom:8px">أسبوعي</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.8">• تشحيم المحامل<br>• فحص البطارية<br>• معايرة الأجهزة</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:10px;padding:14px">
+            <div style="color:var(--amber);font-weight:700;margin-bottom:8px">شهري</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.8">• تغيير زيت المحرك<br>• فحص نظام الوقود<br>• اختبار المولدات</div>
+          </div>
+          <div style="background:var(--bg3);border-radius:10px;padding:14px">
+            <div style="color:var(--purple);font-weight:700;margin-bottom:8px">ربع سنوي</div>
+            <div style="font-size:12px;color:var(--text2);line-height:1.8">• فحص شامل الهيكل<br>• صيانة الهيدروليك<br>• اختبار الحمل الكامل</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== INVENTORY ===== -->
+    <div class="page" id="page-inventory">
+      <div id="lowStockAlert"></div>
+      <div class="controls">
+        <input class="search" id="invSearch" placeholder="🔍  بحث في المستودع..." oninput="renderInv()">
+        <select class="fsel" id="invCatFilter" onchange="renderInv()">
+          <option value="all">جميع الفئات</option>
+        </select>
+        <button class="btn btn-green" id="addInvBtn" onclick="openModal('invAddModal')">+ إضافة صنف</button>
+        <button class="btn btn-blue" onclick="showPage('movements')">↕ سجل الحركات</button>
+      </div>
+      <div class="grid-5" id="invKPIs" style="margin-bottom:16px"></div>
+      <div class="card">
+        <div class="tbl-wrap"><table id="invTable"></table></div>
+      </div>
+    </div>
+
+    <!-- ===== MOVEMENTS ===== -->
+    <div class="page" id="page-movements">
+      <div class="controls">
+        <div class="page-tabs">
+          <button class="page-tab active" onclick="setMovTab('all')">الكل</button>
+          <button class="page-tab" onclick="setMovTab('in')">إدخال ↓</button>
+          <button class="page-tab" onclick="setMovTab('out')">إخراج ↑</button>
+          <button class="page-tab" onclick="setMovTab('return')">إرجاع ↩</button>
+        </div>
+        <button class="btn btn-green" onclick="openModal('movInModal')">↓ إدخال مواد</button>
+        <button class="btn btn-red" onclick="openModal('movOutModal')">↑ إخراج مواد</button>
+        <button class="btn btn-amber" onclick="openModal('movRetModal')">↩ إرجاع مواد</button>
+      </div>
+      <div class="card">
+        <div class="card-title">سجل حركات المستودع</div>
+        <div id="movList"></div>
+      </div>
+    </div>
+
+    <!-- ===== EMPLOYEES ===== -->
+    <div class="page" id="page-employees">
+      <div id="empReadonly" class="readonly-notice" style="display:none">
+        👁 أنت في وضع القراءة فقط — التعديل متاح للمدير ومشرف الورشة
+      </div>
+      <div class="controls">
+        <input class="search" id="empSearch" placeholder="🔍  بحث بالاسم أو التخصص..." oninput="renderEmp()">
+        <select class="fsel" id="empRegFilter" onchange="renderEmp()">
+          <option value="all">جميع المناطق</option>
+          <option value="central">الوسطى</option>
+          <option value="western">الغربية</option>
+          <option value="eastern">الشرقية</option>
+        </select>
+        <select class="fsel" id="empStatusFilter" onchange="renderEmp()">
+          <option value="all">جميع الحالات</option>
+          <option>متاح</option><option>إجازة</option><option>مهمة خارجية</option>
+        </select>
+        <button class="btn btn-green" id="addEmpBtn" onclick="openModal('empAddModal')">+ إضافة موظف</button>
+      </div>
+      <div id="empStats" style="margin-bottom:16px"></div>
+      <div class="tech-grid" id="empGrid"></div>
+    </div>
+
+    <!-- ===== REPORTS ===== -->
+    <div class="page" id="page-reports">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:12px">
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <div class="page-tabs" style="margin-bottom:0">
+            <button class="page-tab active" onclick="setRptRange('daily')">يومي</button>
+            <button class="page-tab" onclick="setRptRange('weekly')">أسبوعي</button>
+            <button class="page-tab" onclick="setRptRange('monthly')">شهري</button>
+            <button class="page-tab" onclick="setRptRange('custom')">مخصص</button>
+          </div>
+          <div id="customDates" style="display:none;display:flex;gap:8px;align-items:center">
+            <input type="date" class="fsel" id="rptFrom" style="font-family:Tajawal">
+            <span style="color:var(--text3)">→</span>
+            <input type="date" class="fsel" id="rptTo" style="font-family:Tajawal">
+          </div>
+        </div>
+        <button class="btn btn-blue" onclick="window.print()">🖨 طباعة / PDF</button>
+      </div>
+      <div class="grid-5" id="rptKPIs" style="margin-bottom:20px"></div>
+      <div class="grid-3">
+        <div class="card"><div class="card-title">الصيانة حسب النوع</div><div id="rptTypeChart"></div></div>
+        <div class="card"><div class="card-title">أداء المناطق</div><div id="rptRegionChart"></div></div>
+        <div class="card"><div class="card-title">أفضل الفنيين أداءً</div><div id="rptTopTechs"></div></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-title">التقرير التفصيلي — أوامر العمل</div>
+        <div class="tbl-wrap"><table id="rptTable"></table></div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- Work Order Modal -->
+<div class="overlay" id="woModal">
+  <div class="modal modal-lg">
+    <div class="modal-hdr">
+      <span class="modal-title" id="woModalTitle">أمر عمل جديد</span>
+      <button class="close-btn" onclick="closeModal('woModal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>نوع المعدة *</label>
+        <select id="wo_eq"><option value="">-- اختر --</option></select></div>
+      <div class="fg"><label>رقم المعدة *</label>
+        <input id="wo_eqid" placeholder="EQ-0001"></div>
+      <div class="fg"><label>نوع الصيانة *</label>
+        <select id="wo_type"><option value="">-- اختر --</option>
+          <option>صيانة وقائية</option><option>صيانة تصحيحية</option>
+          <option>إصلاح طارئ</option><option>معايرة وفحص</option></select></div>
+      <div class="fg"><label>الأولوية</label>
+        <select id="wo_priority">
+          <option>عادي</option><option>عالي</option><option>طارئ</option></select></div>
+      <div class="fg"><label>المنطقة *</label>
+        <select id="wo_region" onchange="updateWOWorkshops()">
+          <option value="">-- اختر --</option>
+          <option value="central">الوسطى</option>
+          <option value="western">الغربية</option>
+          <option value="eastern">الشرقية</option></select></div>
+      <div class="fg"><label>الورشة *</label>
+        <select id="wo_ws"><option value="">-- اختر المنطقة أولاً --</option></select></div>
+      <div class="fg"><label>الفني المسؤول</label>
+        <select id="wo_tech"><option value="">-- اختر --</option></select></div>
+      <div class="fg"><label>الحالة</label>
+        <select id="wo_status">
+          <option>قيد التنفيذ</option><option>مكتمل</option>
+          <option>معلق</option><option>طارئ</option></select></div>
+      <div class="fg"><label>تاريخ البدء</label>
+        <input id="wo_start" type="date"></div>
+      <div class="fg"><label>تاريخ الانتهاء المتوقع</label>
+        <input id="wo_end" type="date"></div>
+      <div class="fg"><label>نسبة الإنجاز %</label>
+        <input id="wo_progress" type="number" min="0" max="100" value="0"></div>
+      <div class="fg form-full"><label>وصف العمل</label>
+        <textarea id="wo_desc" placeholder="وصف تفصيلي..."></textarea></div>
+      <div class="fg form-full"><label>ملاحظات</label>
+        <input id="wo_notes" placeholder="أي ملاحظات إضافية..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-red btn-sm" onclick="closeModal('woModal')">إلغاء</button>
+      <button class="btn btn-green" onclick="saveWO()">✓ حفظ أمر العمل</button>
+    </div>
+  </div>
+</div>
+
+<!-- WO Detail Modal -->
+<div class="overlay" id="woDetailModal">
+  <div class="modal modal-lg">
+    <div class="modal-hdr">
+      <span class="modal-title" id="woDetailTitle"></span>
+      <button class="close-btn" onclick="closeModal('woDetailModal')">✕</button>
+    </div>
+    <div id="woDetailBody"></div>
+    <div class="modal-footer" id="woDetailFooter"></div>
+  </div>
+</div>
+
+<!-- Schedule Modal -->
+<div class="overlay" id="schedModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">إضافة موعد صيانة دورية</span>
+      <button class="close-btn" onclick="closeModal('schedModal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>المعدة *</label><input id="sch_eq" placeholder="اسم أو رقم المعدة"></div>
+      <div class="fg"><label>فترة الصيانة *</label>
+        <select id="sch_period">
+          <option>يومي</option><option>أسبوعي</option><option>شهري</option>
+          <option>ربع سنوي</option><option>نصف سنوي</option><option>سنوي</option>
+        </select></div>
+      <div class="fg"><label>التاريخ القادم *</label><input id="sch_next" type="date"></div>
+      <div class="fg"><label>الفني المسؤول</label><input id="sch_tech" placeholder="اسم الفني"></div>
+      <div class="fg form-full"><label>الورشة</label>
+        <select id="sch_ws"><option value="">-- اختر --</option></select></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-red btn-sm" onclick="closeModal('schedModal')">إلغاء</button>
+      <button class="btn btn-green" onclick="saveSched()">✓ حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- Inventory Add/Edit Modal -->
+<div class="overlay" id="invAddModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title" id="invModalTitle">إضافة صنف جديد</span>
+      <button class="close-btn" onclick="closeModal('invAddModal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>اسم الصنف *</label><input id="inv_name" placeholder="اسم القطعة أو المادة"></div>
+      <div class="fg"><label>الفئة *</label>
+        <select id="inv_cat">
+          <option>كهرباء</option><option>ميكانيكا</option><option>هيدروليك</option>
+          <option>مواد استهلاكية</option><option>أدوات</option><option>أخرى</option>
+        </select></div>
+      <div class="fg"><label>الكمية الحالية *</label><input id="inv_qty" type="number" min="0" value="0"></div>
+      <div class="fg"><label>الحد الأدنى</label><input id="inv_min" type="number" min="0" value="5"></div>
+      <div class="fg"><label>وحدة القياس</label>
+        <select id="inv_unit">
+          <option>قطعة</option><option>لتر</option><option>كيلو</option>
+          <option>متر</option><option>علبة</option><option>طقم</option>
+        </select></div>
+      <div class="fg"><label>التكلفة (ريال)</label><input id="inv_cost" type="number" min="0" placeholder="0"></div>
+      <div class="fg"><label>الموقع في المستودع</label><input id="inv_loc" placeholder="رقم الرف مثلاً A-01"></div>
+      <div class="fg"><label>المنطقة *</label>
+        <select id="inv_region" onchange="updateInvWorkshops()">
+          <option value="central">الوسطى</option>
+          <option value="western">الغربية</option>
+          <option value="eastern">الشرقية</option>
+        </select></div>
+      <div class="fg"><label>الورشة (المستودع) *</label>
+        <select id="inv_ws"><option value="">-- اختر المنطقة أولاً --</option></select></div>
+      <div class="fg form-full"><label>ملاحظات</label><input id="inv_notes" placeholder="اختياري..."></div>
+    </div>
+    <input type="hidden" id="inv_editId">
+    <div class="modal-footer">
+      <button class="btn btn-red btn-sm" onclick="closeModal('invAddModal')">إلغاء</button>
+      <button class="btn btn-green" onclick="saveInv()">✓ حفظ الصنف</button>
+    </div>
+  </div>
+</div>
+
+<!-- Movement IN Modal -->
+<div class="overlay" id="movInModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">↓ إدخال مواد للمستودع</span>
+      <button class="close-btn" onclick="closeModal('movInModal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="fg form-full"><label>الصنف *</label>
+        <select id="movin_item"><option value="">-- اختر الصنف --</option></select></div>
+      <div class="fg"><label>الكمية *</label><input id="movin_qty" type="number" min="1" value="1"></div>
+      <div class="fg"><label>المورد / المصدر</label><input id="movin_src" placeholder="اسم المورد أو الجهة"></div>
+      <div class="fg"><label>التاريخ</label><input id="movin_date" type="date"></div>
+      <div class="fg form-full"><label>ملاحظة</label><input id="movin_note" placeholder="اختياري..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-red btn-sm" onclick="closeModal('movInModal')">إلغاء</button>
+      <button class="btn btn-green" onclick="saveMovIn()">✓ تأكيد الإدخال</button>
+    </div>
+  </div>
+</div>
+
+<!-- Movement OUT Modal -->
+<div class="overlay" id="movOutModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">↑ إخراج مواد من المستودع</span>
+      <button class="close-btn" onclick="closeModal('movOutModal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="fg form-full"><label>الصنف *</label>
+        <select id="movout_item"><option value="">-- اختر الصنف --</option></select></div>
+      <div class="fg"><label>الكمية *</label><input id="movout_qty" type="number" min="1" value="1"></div>
+      <div class="fg"><label>رقم المعدة (لربطها بأمر العمل)</label>
+        <input id="movout_eqid" placeholder="مثال: EQ-0001"></div>
+      <div class="fg"><label>رقم أمر العمل</label>
+        <select id="movout_wo"><option value="">-- اختر أمر العمل --</option></select></div>
+      <div class="fg"><label>الفني الطالب</label><input id="movout_tech" placeholder="اسم الفني"></div>
+      <div class="fg"><label>التاريخ</label><input id="movout_date" type="date"></div>
+      <div class="fg form-full"><label>سبب الإخراج</label><input id="movout_note" placeholder="للصيانة / للإصلاح..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-red btn-sm" onclick="closeModal('movOutModal')">إلغاء</button>
+      <button class="btn btn-red" onclick="saveMovOut()">✓ تأكيد الإخراج</button>
+    </div>
+  </div>
+</div>
+
+<!-- Movement RETURN Modal -->
+<div class="overlay" id="movRetModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">↩ إرجاع مواد للمستودع</span>
+      <button class="close-btn" onclick="closeModal('movRetModal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="fg form-full"><label>الصنف *</label>
+        <select id="movret_item"><option value="">-- اختر الصنف --</option></select></div>
+      <div class="fg"><label>الكمية المرجعة *</label><input id="movret_qty" type="number" min="1" value="1"></div>
+      <div class="fg"><label>رقم المعدة</label><input id="movret_eqid" placeholder="EQ-0001"></div>
+      <div class="fg"><label>التاريخ</label><input id="movret_date" type="date"></div>
+      <div class="fg form-full"><label>سبب الإرجاع</label><input id="movret_note" placeholder="فائض / تم الاستبدال..."></div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-red btn-sm" onclick="closeModal('movRetModal')">إلغاء</button>
+      <button class="btn btn-amber" onclick="saveMovRet()">✓ تأكيد الإرجاع</button>
+    </div>
+  </div>
+</div>
+
+<!-- Employee Add/Edit Modal -->
+<div class="overlay" id="empAddModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title" id="empModalTitle">إضافة موظف جديد</span>
+      <button class="close-btn" onclick="closeModal('empAddModal')">✕</button>
+    </div>
+    <div class="form-grid">
+      <div class="fg"><label>الاسم الكامل *</label><input id="emp_name" placeholder="الاسم..."></div>
+      <div class="fg"><label>التخصص / الدور *</label>
+        <select id="emp_role"><option value="">-- اختر --</option></select></div>
+      <div class="fg"><label>المنطقة *</label>
+        <select id="emp_region" onchange="updateEmpWorkshops()">
+          <option value="">-- اختر --</option>
+          <option value="central">الوسطى</option>
+          <option value="western">الغربية</option>
+          <option value="eastern">الشرقية</option>
+        </select></div>
+      <div class="fg"><label>الورشة *</label>
+        <select id="emp_ws"><option value="">-- اختر المنطقة أولاً --</option></select></div>
+      <div class="fg"><label>الحالة</label>
+        <select id="emp_status">
+          <option>متاح</option><option>إجازة</option><option>مهمة خارجية</option>
+        </select></div>
+      <div class="fg"><label>رقم الهاتف</label><input id="emp_phone" placeholder="05xxxxxxxx"></div>
+      <div class="fg"><label>الرتبة / المستوى</label>
+        <select id="emp_level">
+          <option>فني</option><option>فني أول</option><option>مشرف</option><option>مهندس</option>
+        </select></div>
+      <div class="fg"><label>سنوات الخبرة</label><input id="emp_exp" type="number" min="0" value="1"></div>
+    </div>
+    <input type="hidden" id="emp_editId">
+    <div class="modal-footer">
+      <button class="btn btn-red btn-sm" onclick="closeModal('empAddModal')">إلغاء</button>
+      <button class="btn btn-green" onclick="saveEmp()">✓ حفظ الموظف</button>
+    </div>
+  </div>
+</div>
+
+<!-- Employee Transfer Modal -->
+<div class="overlay" id="empTransferModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title">🔄 نقل موظف</span>
+      <button class="close-btn" onclick="closeModal('empTransferModal')">✕</button>
+    </div>
+    <div id="empTransferInfo" style="background:var(--bg3);border-radius:10px;padding:14px;margin-bottom:18px;font-size:14px;color:var(--text2)"></div>
+    <div class="form-grid">
+      <div class="fg"><label>المنطقة الجديدة *</label>
+        <select id="tr_region" onchange="updateTransferWorkshops()">
+          <option value="">-- اختر --</option>
+          <option value="central">الوسطى</option>
+          <option value="western">الغربية</option>
+          <option value="eastern">الشرقية</option>
+        </select></div>
+      <div class="fg"><label>الورشة الجديدة *</label>
+        <select id="tr_ws"><option value="">-- اختر المنطقة أولاً --</option></select></div>
+      <div class="fg form-full"><label>سبب النقل</label><input id="tr_reason" placeholder="احتياج الورشة / طلب الموظف..."></div>
+    </div>
+    <input type="hidden" id="tr_empId">
+    <div class="modal-footer">
+      <button class="btn btn-red btn-sm" onclick="closeModal('empTransferModal')">إلغاء</button>
+      <button class="btn btn-amber" onclick="saveTransfer()">✓ تأكيد النقل</button>
+    </div>
+  </div>
+</div>
+
+<!-- Employee Detail Modal -->
+<div class="overlay" id="empDetailModal">
+  <div class="modal">
+    <div class="modal-hdr">
+      <span class="modal-title" id="empDetailTitle">ملف الموظف</span>
+      <button class="close-btn" onclick="closeModal('empDetailModal')">✕</button>
+    </div>
+    <div id="empDetailBody"></div>
+    <div class="modal-footer" id="empDetailFooter"></div>
+  </div>
+</div>
+
+<!-- Confirm Modal -->
+<div class="overlay" id="confirmModal">
+  <div class="modal" style="max-width:400px">
+    <div class="modal-hdr">
+      <span class="modal-title" style="color:var(--red)">⚠ تأكيد الحذف</span>
+      <button class="close-btn" onclick="closeModal('confirmModal')">✕</button>
+    </div>
+    <p id="confirmMsg" style="color:var(--text2);margin-bottom:20px;font-size:14px;line-height:1.7"></p>
+    <div class="modal-footer">
+      <button class="btn btn-blue btn-sm" onclick="closeModal('confirmModal')">إلغاء</button>
+      <button class="btn btn-red" id="confirmOkBtn">حذف نهائياً</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================================================================
+// DATA LAYER — localStorage persistence
+// ===================================================================
+const KEYS = {
+  wo:'maint_wo', inv:'maint_inv', emp:'maint_emp',
+  mov:'maint_mov', sched:'maint_sched', session:'maint_session'
+};
+
+function load(key){try{return JSON.parse(localStorage.getItem(key))||null}catch{return null}}
+function save(key,data){localStorage.setItem(key,JSON.stringify(data))}
+
+const WORKSHOPS = {
+  central:[
+    {id:'c-main', name:'قاعدة الإمداد والتموين بالرياض',           workshopLabel:'ورشة تجديد عربات البنزقاور',          type:'main'},
+    {id:'c-sub1', name:'لواء الأمير سعد بن عبدالرحمن الآلي',       workshopLabel:'ورشة سرية هندسة القتال',              type:'sub'},
+    {id:'c-sub2', name:'كتيبة هندسة القتال الأولى',                 workshopLabel:'ورشة الصيانة التنظيمية',              type:'sub'},
+    {id:'c-sub3', name:'لواء الإمام محمد بن سعود الآلي',            workshopLabel:'ورشة سرية هندسة القتال',              type:'sub'},
+    {id:'c-sub4', name:'لواء الأمير تركي بن عبدالعزيز الأول الآلي',workshopLabel:'ورشة سرية هندسة القتال',              type:'sub'},
+    {id:'c-mob',  name:'الورشة المتنقلة — الوسطى',                  workshopLabel:'ورشة متنقلة',                         type:'mobile'},
+  ],
+  western:[
+    {id:'w-main', name:'قاعدة الإمداد والتموين بالقطاع الغربي',    workshopLabel:'ورشة صيانة الاسناد المباشر (البنزين — المفصلة)', type:'main'},
+    {id:'w-mob',  name:'الورشة المتنقلة — الغربية',                 workshopLabel:'ورشة متنقلة',                         type:'mobile'},
+  ],
+  eastern:[
+    {id:'e-main', name:'قاعدة الإمداد والتموين بالقطاع الشرقي',    workshopLabel:'ورشة صيانة الرافعات الشوكية',          type:'main'},
+    {id:'e-sub1', name:'لواء الملك عبدالعزيز الآلي',                workshopLabel:'ورشة سرية هندسة القتال',              type:'sub'},
+    {id:'e-sub2', name:'لواء الملك عبدالله بن عبدالعزيز الآلي',     workshopLabel:'ورشة سرية قيادة اللواء',              type:'sub'},
+    {id:'e-mob',  name:'الورشة المتنقلة — الشرقية',                 workshopLabel:'ورشة متنقلة',                         type:'mobile'},
+  ]
+};
+const REGION_NAMES={central:'المنطقة الوسطى',western:'المنطقة الغربية',eastern:'المنطقة الشرقية'};
+const EQ_TYPES=['مولد كهربائي','معدة هندسية ثقيلة','مركبة مدرعة','معدة حفر','رافعة','ضاغط هواء','مضخة ديزل','نظام هيدروليك','معدة إنشائية','مركبة نقل'];
+const TECH_ROLES=['فني كهرباء وإلكترونيات','ميكانيكي معدات ومولدات','فني لحام','فني خراطة','فني توضيب مكائن','فني طرمبات ديزل','فني صيانة رديتر','فني توضيب قير','فني فحص كمبيوتر','فني هيدروليك وكبس ليات','بنشري / تشحيم','مشرف ورشة'];
+const MAINT_TYPES=['صيانة وقائية','صيانة تصحيحية','إصلاح طارئ','معايرة وفحص'];
+const STATUS_COLOR={
+  'قيد التنفيذ':'b-blue','مكتمل':'b-green','معلق':'b-amber',
+  'طارئ':'b-red','مجدول':'b-blue','قريب':'b-amber','متأخر':'b-red'
+};
+const MAINT_COLOR={'صيانة وقائية':'b-green','صيانة تصحيحية':'b-amber','إصلاح طارئ':'b-red','معايرة وفحص':'b-purple'};
+
+function uid(){return Date.now().toString(36)+Math.random().toString(36).substr(2,5).toUpperCase()}
+function today(){return new Date().toISOString().split('T')[0]}
+
+const APP_VERSION='v2-delta-correct-ws';
+function checkVersion(){
+  const saved=localStorage.getItem('maint_version');
+  if(saved!==APP_VERSION){
+    // Clear all old data so new workshop names take effect
+    Object.values(KEYS).forEach(k=>localStorage.removeItem(k));
+    localStorage.setItem('maint_version',APP_VERSION);
+  }
+}
+
+// ── Seed initial data if empty ──
+function seedData(){
+  if(!load(KEYS.wo)){
+    const wos=[];
+    for(let i=1;i<=20;i++){
+      const rKeys=Object.keys(WORKSHOPS);
+      const rk=rKeys[i%3];
+      const ws=WORKSHOPS[rk][i%WORKSHOPS[rk].length];
+      const st=['قيد التنفيذ','مكتمل','معلق','مكتمل','مكتمل'][i%5];
+      const mt=MAINT_TYPES[i%4];
+      const d=new Date(2025,i%6+1,(i%28)+1);
+      wos.push({
+        id:`WO-2025-${String(i).padStart(3,'0')}`,
+        equipment:EQ_TYPES[i%10],equipmentId:`EQ-${String(i*7+100).padStart(4,'0')}`,
+        maintType:mt,status:st,priority:'عادي',
+        regionId:rk,regionName:REGION_NAMES[rk],
+        workshopId:ws.id,workshopName:ws.name,
+        techName:`فني ${['أحمد','محمد','عبدالله','سالم','خالد'][i%5]} ${['العتيبي','الحربي','الشمري'][i%3]}`,
+        description:`صيانة ${mt} للـ${EQ_TYPES[i%10]}`,
+        startDate:d.toISOString().split('T')[0],
+        endDate:new Date(d.getTime()+(i%4+1)*86400000).toISOString().split('T')[0],
+        progress:st==='مكتمل'?100:st==='معلق'?0:Math.floor(Math.random()*70)+20,
+        notes:'',createdAt:d.toISOString().split('T')[0]
+      });
+    }
+    save(KEYS.wo,wos);
+  }
+  if(!load(KEYS.inv)){
+    const parts=['فلتر زيت محرك','فلتر هواء','سير مروحة','بلوج إشعال','بطارية 12V',
+      'فلتر وقود ديزل','مضخة ماء','ترموستات','كلتش قرص','زيت محرك 15W40',
+      'شمعات إشعال','فيوزات كهربائية','خراطيم ماء','طوالي محرك','مرشح هيدروليك',
+      'زيت هيدروليك','أسلاك كهرباء','مفاتيح كهربائية','رادياتير','مضخة ديزل'];
+    const cats=['كهرباء','ميكانيكا','هيدروليك','مواد استهلاكية'];
+    const units=['قطعة','لتر','قطعة','قطعة'];
+    const wsKeys=Object.values(WORKSHOPS).flat();
+    const invItems=parts.map((name,i)=>{
+      const ws=wsKeys[i%wsKeys.length];
+      const wsFullName=ws.name+(ws.workshopLabel?' — '+ws.workshopLabel:'');
+      return {
+        id:`PART-${String(i+1).padStart(3,'0')}`,
+        name,category:cats[i%4],unit:units[i%4],
+        quantity:Math.floor(Math.random()*40)+8,minQty:5,
+        cost:(Math.random()*400+50).toFixed(0),
+        location:`A-${String(i%10+1).padStart(2,'0')}`,
+        regionId:Object.keys(WORKSHOPS)[i%3],
+        workshopId:ws.id,
+        workshopName:wsFullName,
+        notes:'',
+        createdAt:today(),updatedAt:today()
+      };
+    });
+    save(KEYS.inv,invItems);
+  }
+  if(!load(KEYS.emp)){
+    // بيانات الموظفين تُضاف يدوياً من قِبل المدير فقط
+    save(KEYS.emp,[]);
+  }
+  if(!load(KEYS.mov)) save(KEYS.mov,[]);
+  if(!load(KEYS.sched)){
+    const scheds=[
+      {id:uid(),equipment:'مولد كهربائي MG-001',period:'شهري',nextDate:'2025-04-15',tech:'فني كهرباء',workshopName:'قاعدة الإمداد والتموين بالرياض — ورشة تجديد عربات البنزقاور',status:'مجدول'},
+      {id:uid(),equipment:'معدة هندسية EH-022',period:'ربع سنوي',nextDate:'2025-04-20',tech:'ميكانيكي',workshopName:'قاعدة الإمداد والتموين بالقطاع الغربي — ورشة صيانة الاسناد المباشر (البنزين — المفصلة)',status:'قريب'},
+      {id:uid(),equipment:'مضخة ديزل DP-005',period:'نصف سنوي',nextDate:'2025-04-05',tech:'فني طرمبات',workshopName:'قاعدة الإمداد والتموين بالقطاع الشرقي — ورشة صيانة الرافعات الشوكية',status:'متأخر'},
+      {id:uid(),equipment:'نظام هيدروليك HS-009',period:'شهري',nextDate:'2025-04-10',tech:'فني هيدروليك',workshopName:'لواء الأمير سعد بن عبدالرحمن الآلي — ورشة سرية هندسة القتال',status:'قريب'},
+    ];
+    save(KEYS.sched,scheds);
+  }
+}
+
+// ===================================================================
+// SESSION & AUTH
+// ===================================================================
+const CODES={admin:'admin123',supervisor:'sup2025',tech:'tech2025'};
+let currentUser={role:'',name:''};
+let currentRoleSet='admin';
+
+function setRole(r){
+  currentRoleSet=r;
+  document.querySelectorAll('.login-tab').forEach((b,i)=>{
+    b.classList.toggle('active',['admin','supervisor','tech'][i]===r);
+  });
+}
+
+function doLogin(){
+  const name=document.getElementById('loginName').value.trim();
+  const code=document.getElementById('loginCode').value.trim();
+  const err=document.getElementById('loginError');
+  if(!name){err.style.display='block';err.textContent='❌ الرجاء إدخال اسمك';return;}
+  if(code!==CODES[currentRoleSet]){err.style.display='block';err.textContent='❌ كود الدخول غير صحيح';return;}
+  err.style.display='none';
+  currentUser={role:currentRoleSet,name};
+  save(KEYS.session,currentUser);
+  startApp();
+}
+
+function doLogout(){
+  localStorage.removeItem(KEYS.session);
+  document.getElementById('app').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('loginCode').value='';
+}
+
+function startApp(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  const rb={'admin':'مدير النظام','supervisor':'مشرف ورشة','tech':'فني'};
+  const rc={'admin':'role-admin','supervisor':'role-supervisor','tech':'role-tech'};
+  document.getElementById('roleDisplay').textContent=rb[currentUser.role];
+  document.getElementById('roleDisplay').className='role-badge '+rc[currentUser.role];
+  document.getElementById('nameDisplay').textContent=currentUser.name;
+  // Restrict buttons by role
+  const isAdmin=currentUser.role==='admin';
+  const isSup=currentUser.role==='supervisor';
+  const canEdit=isAdmin||isSup;
+  ['addWOBtn','addSchedBtn','addInvBtn','addEmpBtn'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el) el.style.display=canEdit?'':'none';
+  });
+  if(currentUser.role==='tech'){
+    document.getElementById('empReadonly').style.display='flex';
+  }
+  fillWsFilter();
+  populateDropdowns();
+  refreshAll();
+  showPage('dashboard');
+}
+
+// ===================================================================
+// FILTERS
+// ===================================================================
+let gRegion='all', gWs='all';
+
+function fillWsFilter(){
+  const sel=document.getElementById('wsFilter');
+  sel.innerHTML='<option value="all">جميع الورش</option>';
+  const r=document.getElementById('regionFilter').value;
+  const list=r==='all'?Object.values(WORKSHOPS).flat():WORKSHOPS[r]||[];
+  list.forEach(w=>{
+    const o=document.createElement('option');
+    o.value=w.id;
+    // Show unit name + workshop label for clarity
+    o.textContent=w.name+(w.workshopLabel?' — '+w.workshopLabel:'');
+    sel.appendChild(o);
+  });
+}
+
+function applyFilters(){
+  gRegion=document.getElementById('regionFilter').value;
+  gWs=document.getElementById('wsFilter').value;
+  fillWsFilter();
+  refreshAll();
+}
+
+function filterWOs(list){
+  return list.filter(w=>{
+    const mr=gRegion==='all'||w.regionId===gRegion;
+    const mw=gWs==='all'||w.workshopId===gWs;
+    return mr&&mw;
+  });
+}
+
+// ===================================================================
+// NAV
+// ===================================================================
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  document.getElementById('nav-'+id).classList.add('active');
+  renderPage(id);
+}
+
+function renderPage(id){
+  if(id==='dashboard') renderDashboard();
+  else if(id==='workorders') renderWO();
+  else if(id==='schedule') renderSched();
+  else if(id==='inventory'){renderInv();updateInvCats();}
+  else if(id==='movements') renderMovements();
+  else if(id==='employees') renderEmp();
+  else if(id==='reports') renderReports();
+}
+
+function refreshAll(){renderDashboard();updateLowStockBadge();}
+
+// ===================================================================
+// DASHBOARD
+// ===================================================================
+function renderDashboard(){
+  const wos=filterWOs(load(KEYS.wo)||[]);
+  const inv=load(KEYS.inv)||[];
+  const emp=load(KEYS.emp)||[];
+  const movs=(load(KEYS.mov)||[]).slice(0,6);
+
+  const total=wos.length;
+  const done=wos.filter(w=>w.status==='مكتمل').length;
+  const prog=wos.filter(w=>w.status==='قيد التنفيذ').length;
+  const pend=wos.filter(w=>w.status==='معلق').length;
+  const pct=total?Math.round(done/total*100):0;
+  const lowStock=inv.filter(i=>i.quantity<=i.minQty);
+  const avail=emp.filter(e=>e.status==='متاح').length;
+
+  // KPIs
+  document.getElementById('kpiRow').innerHTML=[
+    {l:'أوامر العمل',v:total,c:'var(--blue)',s:'إجمالي'},
+    {l:'منجز',v:done,c:'var(--green)',s:pct+'%'},
+    {l:'جاري',v:prog,c:'var(--amber)',s:'قيد التنفيذ'},
+    {l:'معلق',v:pend,c:'var(--red)',s:'يحتاج متابعة'},
+    {l:'فنيون متاحون',v:avail,c:'var(--purple)',s:`من ${emp.length}`},
+  ].map(k=>`<div class="kpi" style="border-top-color:${k.c}">
+    <div class="kpi-val" style="color:${k.c}">${k.v}</div>
+    <div class="kpi-label">${k.l}</div>
+    <div class="kpi-sub">${k.s}</div>
+  </div>`).join('');
+
+  // Donut
+  const r=48,cx=60,cy=60,circ=2*Math.PI*r;
+  const segs=[
+    {v:done,c:'var(--green)',l:'مكتمل'},
+    {v:prog,c:'var(--blue)',l:'جاري'},
+    {v:pend,c:'var(--amber)',l:'معلق'},
+    {v:wos.filter(w=>w.status==='طارئ').length,c:'var(--red)',l:'طارئ'},
+  ];
+  let offset=0;
+  const paths=segs.map(s=>{
+    const pct2=total?s.v/total:0;
+    const len=pct2*circ;
+    const p=`<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="${s.c}" stroke-width="12"
+      stroke-dasharray="${len} ${circ-len}" stroke-dashoffset="${-offset}" transform="rotate(-90 ${cx} ${cy})"/>`;
+    offset+=len; return p;
+  }).join('');
+  document.getElementById('donutChart').innerHTML=
+    `<circle cx="${cx}" cy="${cy}" r="${r}" fill="none" stroke="var(--bg3)" stroke-width="12"/>
+    ${paths}
+    <text x="${cx}" y="${cy-6}" text-anchor="middle" fill="var(--text)" font-size="20" font-weight="900">${pct}%</text>
+    <text x="${cx}" y="${cy+12}" text-anchor="middle" fill="var(--text3)" font-size="10">إنجاز</text>`;
+  document.getElementById('donutLegend').innerHTML=segs.map(s=>
+    `<div class="legend-row"><span class="legend-dot" style="background:${s.c}"></span>
+    <span style="color:var(--text2);font-size:12px">${s.l}</span>
+    <strong style="color:${s.c};margin-right:auto;padding-right:10px">${s.v}</strong></div>`).join('');
+
+  // Type chart
+  document.getElementById('typeChart').innerHTML=MAINT_TYPES.map(mt=>{
+    const cnt=wos.filter(w=>w.maintType===mt).length;
+    const pct2=total?Math.round(cnt/total*100):0;
+    return `<div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:12px;color:var(--text2)">${mt}</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">${cnt}</span>
+      </div>
+      <div class="prog-track"><div class="prog-fill" style="width:${pct2}%"></div></div>
+    </div>`;
+  }).join('');
+
+  // Region chart
+  document.getElementById('regionChart').innerHTML=Object.entries(REGION_NAMES).map(([rk,rn])=>{
+    const rwos=wos.filter(w=>w.regionId===rk);
+    const rDone=rwos.filter(w=>w.status==='مكتمل').length;
+    const rPct=rwos.length?Math.round(rDone/rwos.length*100):0;
+    return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text)">${rn}</div>
+          <div style="font-size:11px;color:var(--text3)">${rwos.length} أمر • ${rPct}% منجز</div>
+        </div>
+        <span style="font-size:16px;font-weight:900;color:var(--green)">${rPct}%</span>
+      </div>
+      <div class="prog-track"><div class="prog-fill" style="width:${rPct}%"></div></div>
+    </div>`;
+  }).join('');
+
+  // Recent WOs
+  const recentWos=wos.slice(0,6);
+  document.getElementById('dashWOTable').innerHTML=
+    `<thead><tr>${['رقم الأمر','المعدة','النوع','الفني','الحالة','الإنجاز'].map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${recentWos.map(wo=>`<tr>
+      <td style="color:var(--blue);font-weight:700">${wo.id}</td>
+      <td>${wo.equipment}</td>
+      <td><span class="badge ${MAINT_COLOR[wo.maintType]||'b-gray'}">${wo.maintType}</span></td>
+      <td>${wo.techName}</td>
+      <td><span class="badge ${STATUS_COLOR[wo.status]||'b-gray'}">${wo.status}</span></td>
+      <td><div style="display:flex;align-items:center;gap:6px">
+        <div class="prog-track" style="width:80px"><div class="prog-fill" style="width:${wo.progress}%"></div></div>
+        <span class="prog-txt">${wo.progress}%</span>
+      </div></td>
+    </tr>`).join('')}</tbody>`;
+
+  // Low stock
+  document.getElementById('dashLowStock').innerHTML=lowStock.length
+    ? lowStock.slice(0,5).map(i=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
+        <span style="color:var(--text)">${i.name}</span>
+        <span style="color:var(--red);font-weight:700">${i.quantity} ${i.unit} <span style="color:var(--text3);font-weight:400">/ حد أدنى ${i.minQty}</span></span>
+      </div>`).join('')
+    : '<p style="color:var(--text3);font-size:13px">✅ لا توجد مواد منخفضة</p>';
+
+  // Recent movements
+  document.getElementById('dashMovements').innerHTML=(movs.length
+    ? movs.map(m=>movItem(m))
+    : ['<p style="color:var(--text3);font-size:13px">لا توجد حركات بعد</p>']).join('');
+}
+
+// ===================================================================
+// WORK ORDERS
+// ===================================================================
+function renderWO(){
+  let wos=filterWOs(load(KEYS.wo)||[]);
+  const q=document.getElementById('woSearch')?.value.toLowerCase()||'';
+  const st=document.getElementById('woStatusFilter')?.value||'all';
+  const tp=document.getElementById('woTypeFilter')?.value||'all';
+  if(q) wos=wos.filter(w=>w.id.toLowerCase().includes(q)||w.equipment.toLowerCase().includes(q)||w.techName.toLowerCase().includes(q)||w.equipmentId.toLowerCase().includes(q));
+  if(st!=='all') wos=wos.filter(w=>w.status===st);
+  if(tp!=='all') wos=wos.filter(w=>w.maintType===tp);
+  const canEdit=currentUser.role!=='tech';
+  document.getElementById('woTable').innerHTML=
+    `<thead><tr>${['رقم الأمر','المعدة','الرقم','النوع','المنطقة','الورشة','الفني','الحالة','الإنجاز','الإجراء'].map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${wos.map(wo=>`<tr>
+      <td style="color:var(--blue);font-weight:700;cursor:pointer" onclick="openWODetail('${wo.id}')">${wo.id}</td>
+      <td>${wo.equipment}</td>
+      <td style="font-family:monospace;color:var(--text3);font-size:11px">${wo.equipmentId}</td>
+      <td><span class="badge ${MAINT_COLOR[wo.maintType]||'b-gray'}">${wo.maintType}</span></td>
+      <td style="font-size:11px">${wo.regionName}</td>
+      <td style="font-size:11px">${wo.workshopName}</td>
+      <td>${wo.techName}</td>
+      <td><span class="badge ${STATUS_COLOR[wo.status]||'b-gray'}">${wo.status}</span></td>
+      <td><div style="display:flex;align-items:center;gap:5px">
+        <div class="prog-track" style="width:70px"><div class="prog-fill" style="width:${wo.progress}%"></div></div>
+        <span class="prog-txt">${wo.progress}%</span></div></td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn btn-blue btn-sm" onclick="openWODetail('${wo.id}')">عرض</button>
+        ${canEdit?`<button class="btn btn-amber btn-sm" onclick="editWO('${wo.id}')">تعديل</button>
+        <button class="btn btn-red btn-sm" onclick="deleteWO('${wo.id}')">حذف</button>`:''}
+      </div></td>
+    </tr>`).join('')||'<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:30px">لا توجد نتائج</td></tr>'}</tbody>`;
+}
+
+function openWODetail(id){
+  const wo=(load(KEYS.wo)||[]).find(w=>w.id===id);
+  if(!wo) return;
+  const inv=load(KEYS.inv)||[];
+  const movs=(load(KEYS.mov)||[]).filter(m=>m.workOrderId===id||m.equipmentId===wo.equipmentId);
+  document.getElementById('woDetailTitle').textContent='تفاصيل أمر العمل — '+wo.id;
+  document.getElementById('woDetailBody').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
+      ${[['المعدة',wo.equipment],['الرقم التسلسلي',wo.equipmentId],['نوع الصيانة',wo.maintType],
+        ['الأولوية',wo.priority||'عادي'],['المنطقة',wo.regionName],['الورشة',wo.workshopName],
+        ['الفني',wo.techName],['الحالة',wo.status],['تاريخ البدء',wo.startDate],
+        ['تاريخ الانتهاء',wo.endDate],['نسبة الإنجاز',wo.progress+'%']
+      ].map(([k,v])=>`<div style="background:var(--bg3);border-radius:8px;padding:10px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:3px">${k}</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text)">${v||'—'}</div>
+      </div>`).join('')}
+    </div>
+    ${wo.description?`<div style="background:var(--bg3);border-radius:8px;padding:12px;margin-bottom:12px">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px">الوصف</div>
+      <div style="font-size:13px;color:var(--text2);line-height:1.7">${wo.description}</div>
+    </div>`:''}
+    ${wo.notes?`<div style="background:#f5a62315;border:1px solid #f5a62330;border-radius:8px;padding:12px;margin-bottom:12px">
+      <div style="font-size:11px;color:var(--amber);margin-bottom:4px">ملاحظات</div>
+      <div style="font-size:13px;color:var(--text2)">${wo.notes}</div>
+    </div>`:''}
+    ${movs.length?`<div style="background:var(--bg3);border-radius:8px;padding:12px">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-weight:700">قطع الغيار المستخدمة من المستودع</div>
+      ${movs.map(m=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--text)">${m.itemName}</span>
+        <span style="color:${m.type==='return'?'var(--amber)':'var(--red)'}">
+          ${m.type==='return'?'مرجع':'مسحوب'}: ${m.qty} ${m.unit}</span>
+      </div>`).join('')}
+    </div>`:''}`;
+  const canEdit=currentUser.role!=='tech';
+  document.getElementById('woDetailFooter').innerHTML=
+    `${canEdit?`<button class="btn btn-amber btn-sm" onclick="closeModal('woDetailModal');editWO('${wo.id}')">تعديل</button>`:''}
+    <button class="btn btn-blue" onclick="closeModal('woDetailModal')">إغلاق</button>`;
+  openModal('woDetailModal');
+}
+
+function editWO(id){
+  const wo=(load(KEYS.wo)||[]).find(w=>w.id===id);
+  if(!wo) return;
+  document.getElementById('woModalTitle').textContent='تعديل أمر العمل — '+wo.id;
+  document.getElementById('wo_eq').value=wo.equipment;
+  document.getElementById('wo_eqid').value=wo.equipmentId;
+  document.getElementById('wo_type').value=wo.maintType;
+  document.getElementById('wo_priority').value=wo.priority||'عادي';
+  document.getElementById('wo_region').value=wo.regionId;
+  updateWOWorkshops();
+  setTimeout(()=>{document.getElementById('wo_ws').value=wo.workshopId;},50);
+  document.getElementById('wo_tech').value=wo.techName;
+  document.getElementById('wo_status').value=wo.status;
+  document.getElementById('wo_start').value=wo.startDate;
+  document.getElementById('wo_end').value=wo.endDate;
+  document.getElementById('wo_progress').value=wo.progress;
+  document.getElementById('wo_desc').value=wo.description;
+  document.getElementById('wo_notes').value=wo.notes;
+  document.getElementById('woModal').dataset.editId=id;
+  openModal('woModal');
+}
+
+function saveWO(){
+  const eq=document.getElementById('wo_eq').value;
+  const eqid=document.getElementById('wo_eqid').value.trim();
+  const tp=document.getElementById('wo_type').value;
+  const reg=document.getElementById('wo_region').value;
+  const ws=document.getElementById('wo_ws').value;
+  if(!eq||!eqid||!tp||!reg||!ws){alert('⚠ الرجاء ملء الحقول الإلزامية');return;}
+  const wsObj=WORKSHOPS[reg]?.find(w=>w.id===ws);
+  const wsFullName=wsObj?(wsObj.name+(wsObj.workshopLabel?' — '+wsObj.workshopLabel:'')):ws;
+  const wos=load(KEYS.wo)||[];
+  const editId=document.getElementById('woModal').dataset.editId;
+  const data={
+    equipment:eq,equipmentId:eqid,maintType:tp,
+    priority:document.getElementById('wo_priority').value,
+    regionId:reg,regionName:REGION_NAMES[reg],
+    workshopId:ws,workshopName:wsFullName,
+    techName:document.getElementById('wo_tech').value||'غير محدد',
+    status:document.getElementById('wo_status').value,
+    startDate:document.getElementById('wo_start').value||today(),
+    endDate:document.getElementById('wo_end').value||'',
+    progress:parseInt(document.getElementById('wo_progress').value)||0,
+    description:document.getElementById('wo_desc').value,
+    notes:document.getElementById('wo_notes').value,
+  };
+  if(editId){
+    const idx=wos.findIndex(w=>w.id===editId);
+    if(idx>-1){wos[idx]={...wos[idx],...data};delete document.getElementById('woModal').dataset.editId;}
+  } else {
+    const newId='WO-'+new Date().getFullYear()+'-'+String(wos.length+1).padStart(3,'0');
+    wos.push({id:newId,...data,createdAt:today()});
+  }
+  save(KEYS.wo,wos);
+  closeModal('woModal');
+  renderWO();updateLowStockBadge();renderDashboard();
+  document.getElementById('woModalTitle').textContent='أمر عمل جديد';
+  ['wo_eq','wo_eqid','wo_type','wo_priority','wo_region','wo_ws','wo_tech','wo_status','wo_start','wo_end','wo_desc','wo_notes'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.value='';
+  });
+  document.getElementById('wo_progress').value=0;
+}
+
+function deleteWO(id){
+  showConfirm(`هل تريد حذف أمر العمل "${id}" نهائياً؟`,()=>{
+    const wos=(load(KEYS.wo)||[]).filter(w=>w.id!==id);
+    save(KEYS.wo,wos);renderWO();renderDashboard();
+  });
+}
+
+// ===================================================================
+// SCHEDULE
+// ===================================================================
+function renderSched(){
+  const scheds=load(KEYS.sched)||[];
+  const st={'مجدول':0,'قريب':0,'متأخر':0};
+  scheds.forEach(s=>{ if(st[s.status]!==undefined) st[s.status]++; });
+  document.getElementById('schedKPIs').innerHTML=[
+    {l:'إجمالي المجدول',v:scheds.length,c:'var(--blue)'},
+    {l:'قريب الموعد',v:st['قريب'],c:'var(--amber)'},
+    {l:'متأخر',v:st['متأخر'],c:'var(--red)'},
+    {l:'مكتمل مسبقاً',v:(load(KEYS.wo)||[]).filter(w=>w.maintType==='صيانة وقائية'&&w.status==='مكتمل').length,c:'var(--green)'},
+  ].map(k=>`<div class="kpi" style="border-top-color:${k.c}">
+    <div class="kpi-val" style="color:${k.c}">${k.v}</div>
+    <div class="kpi-label">${k.l}</div>
+  </div>`).join('');
+  const canEdit=currentUser.role!=='tech';
+  document.getElementById('schedTable').innerHTML=
+    `<thead><tr>${['المعدة','الفترة','التاريخ القادم','الفني','الورشة','الحالة','إجراء'].map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${scheds.map(s=>`<tr>
+      <td style="color:var(--text);font-weight:600">${s.equipment}</td>
+      <td><span class="badge b-blue">${s.period}</span></td>
+      <td style="color:var(--text2)">${s.nextDate}</td>
+      <td>${s.tech}</td>
+      <td style="font-size:11px">${s.workshopName||'—'}</td>
+      <td><span class="badge ${STATUS_COLOR[s.status]||'b-gray'}">${s.status}</span></td>
+      <td>${canEdit?`<button class="btn btn-red btn-sm" onclick="deleteSched('${s.id}')">حذف</button>`:'—'}</td>
+    </tr>`).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">لا توجد بيانات</td></tr>'}</tbody>`;
+}
+
+function saveSched(){
+  const eq=document.getElementById('sch_eq').value.trim();
+  const nd=document.getElementById('sch_next').value;
+  if(!eq||!nd){alert('⚠ المعدة والتاريخ مطلوبان');return;}
+  const scheds=load(KEYS.sched)||[];
+  const wsEl=document.getElementById('sch_ws');
+  const wsName=wsEl.options[wsEl.selectedIndex]?.text||'';
+  // Determine status
+  const diff=Math.ceil((new Date(nd)-new Date())/(1000*60*60*24));
+  const status=diff<0?'متأخر':diff<=7?'قريب':'مجدول';
+  scheds.push({
+    id:uid(),equipment:eq,
+    period:document.getElementById('sch_period').value,
+    nextDate:nd,tech:document.getElementById('sch_tech').value,
+    workshopName:wsName,status
+  });
+  save(KEYS.sched,scheds);closeModal('schedModal');renderSched();
+  ['sch_eq','sch_next','sch_tech'].forEach(id=>document.getElementById(id).value='');
+}
+
+function deleteSched(id){
+  showConfirm('هل تريد حذف هذا الموعد؟',()=>{
+    save(KEYS.sched,(load(KEYS.sched)||[]).filter(s=>s.id!==id));renderSched();
+  });
+}
+
+// ===================================================================
+// INVENTORY
+// ===================================================================
+function updateInvCats(){
+  const allInv=load(KEYS.inv)||[];
+  const inv=allInv.filter(i=>{
+    const mr=gRegion==='all'||i.regionId===gRegion;
+    const mw=gWs==='all'||i.workshopId===gWs;
+    return mr&&mw;
+  });
+  const cats=[...new Set(inv.map(i=>i.category))];
+  const sel=document.getElementById('invCatFilter');
+  if(!sel) return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="all">جميع الفئات</option>';
+  cats.forEach(c=>{const o=document.createElement('option');o.value=c;o.textContent=c;sel.appendChild(o);});
+  sel.value=cur;
+}
+
+function updateLowStockBadge(){
+  const allInv=load(KEYS.inv)||[];
+  // Badge shows low stock across ALL workshops
+  const low=allInv.filter(i=>i.quantity<=i.minQty).length;
+  const badge=document.getElementById('lowStockBadge');
+  if(badge){badge.textContent=low;badge.style.display=low?'':'none';}
+}
+
+function updateInvWorkshops(){
+  const reg=document.getElementById('inv_region')?.value;
+  const sel=document.getElementById('inv_ws');
+  if(!sel) return;
+  sel.innerHTML='<option value="">-- اختر الورشة --</option>';
+  (WORKSHOPS[reg]||[]).forEach(w=>{
+    const o=document.createElement('option');
+    o.value=w.id;
+    o.textContent=w.name+(w.workshopLabel?' — '+w.workshopLabel:'');
+    sel.appendChild(o);
+  });
+}
+
+function renderInv(){
+  const allInv=load(KEYS.inv)||[];
+  // Filter by global region+workshop from header
+  let inv=allInv.filter(i=>{
+    const mr=gRegion==='all'||i.regionId===gRegion;
+    const mw=gWs==='all'||i.workshopId===gWs;
+    return mr&&mw;
+  });
+  const q=document.getElementById('invSearch')?.value.toLowerCase()||'';
+  const cat=document.getElementById('invCatFilter')?.value||'all';
+  let filtered=inv.filter(i=>
+    (cat==='all'||i.category===cat)&&
+    (!q||i.name.toLowerCase().includes(q)||i.id.toLowerCase().includes(q))
+  );
+  const total=inv.length;
+  const low=inv.filter(i=>i.quantity<=i.minQty).length;
+  const totalVal=inv.reduce((s,i)=>s+i.quantity*(parseFloat(i.cost)||0),0);
+  const wsLabel=gWs!=='all'
+    ? (Object.values(WORKSHOPS).flat().find(w=>w.id===gWs)?.name||'')
+    : gRegion!=='all' ? REGION_NAMES[gRegion] : 'جميع الورش';
+
+  const alertEl=document.getElementById('lowStockAlert');
+  if(alertEl){
+    alertEl.innerHTML=low
+      ?`<div class="alert alert-red">⚠ تحذير: ${low} صنف وصلت للحد الأدنى في "${wsLabel}" — الرجاء إعادة الطلب</div>`
+      :'';
+  }
+  document.getElementById('invKPIs').innerHTML=[
+    {l:'أصناف '+wsLabel,v:total,c:'var(--blue)'},
+    {l:'مواد منخفضة',v:low,c:'var(--red)'},
+    {l:'القيمة الإجمالية',v:Math.round(totalVal).toLocaleString('ar')+' ر.س',c:'var(--green)'},
+    {l:'الفئات',v:new Set(inv.map(i=>i.category)).size,c:'var(--purple)'},
+    {l:'مواد متاحة',v:inv.filter(i=>i.quantity>i.minQty).length,c:'var(--cyan)'},
+  ].map(k=>`<div class="kpi" style="border-top-color:${k.c}">
+    <div class="kpi-val" style="color:${k.c};font-size:${k.v.toString().length>8?'16px':'28px'}">${k.v}</div>
+    <div class="kpi-label">${k.l}</div>
+  </div>`).join('');
+  const canEdit=currentUser.role!=='tech';
+  document.getElementById('invTable').innerHTML=
+    `<thead><tr>${['الكود','الصنف','الفئة','الكمية','الحد الأدنى','الوحدة','الموقع','التكلفة','الورشة','الإجراء'].map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${filtered.map(i=>`<tr style="${i.quantity<=i.minQty?'background:#f04d4d08;':''}">
+      <td style="font-family:monospace;color:var(--text3);font-size:11px">${i.id}</td>
+      <td style="color:var(--text);font-weight:600">${i.name}</td>
+      <td><span class="badge b-purple">${i.category}</span></td>
+      <td style="font-size:18px;font-weight:900;color:${i.quantity<=i.minQty?'var(--red)':'var(--green)'}">${i.quantity}</td>
+      <td style="color:var(--text3)">${i.minQty}</td>
+      <td>${i.unit}</td>
+      <td style="font-family:monospace;font-size:12px;color:var(--text3)">${i.location||'—'}</td>
+      <td style="color:var(--amber)">${i.cost||0} ر.س</td>
+      <td style="font-size:11px;color:var(--text2)">${i.workshopName||REGION_NAMES[i.regionId]||'—'}</td>
+      <td><div style="display:flex;gap:4px">
+        <button class="btn btn-green btn-sm" onclick="quickMovIn('${i.id}')" title="إدخال">↓</button>
+        <button class="btn btn-red btn-sm" onclick="quickMovOut('${i.id}')" title="إخراج">↑</button>
+        <button class="btn btn-amber btn-sm" onclick="quickMovRet('${i.id}')" title="إرجاع">↩</button>
+        ${canEdit?`<button class="btn btn-blue btn-sm" onclick="editInv('${i.id}')">✏</button>
+        <button class="btn btn-red btn-sm" onclick="deleteInv('${i.id}')">🗑</button>`:''}
+      </div></td>
+    </tr>`).join('')||'<tr><td colspan="10" style="text-align:center;color:var(--text3);padding:30px">لا توجد نتائج — اختر ورشة مختلفة أو أضف أصناف</td></tr>'}</tbody>`;
+  updateLowStockBadge();
+}
+
+function editInv(id){
+  const inv=load(KEYS.inv)||[];
+  const item=inv.find(i=>i.id===id);
+  if(!item) return;
+  document.getElementById('invModalTitle').textContent='تعديل الصنف — '+item.id;
+  document.getElementById('inv_name').value=item.name;
+  document.getElementById('inv_cat').value=item.category;
+  document.getElementById('inv_qty').value=item.quantity;
+  document.getElementById('inv_min').value=item.minQty;
+  document.getElementById('inv_unit').value=item.unit;
+  document.getElementById('inv_cost').value=item.cost||0;
+  document.getElementById('inv_loc').value=item.location||'';
+  document.getElementById('inv_region').value=item.regionId||'central';
+  document.getElementById('inv_notes').value=item.notes||'';
+  document.getElementById('inv_editId').value=id;
+  updateInvWorkshops();
+  setTimeout(()=>{
+    if(item.workshopId) document.getElementById('inv_ws').value=item.workshopId;
+  },60);
+  openModal('invAddModal');
+}
+
+function saveInv(){
+  const name=document.getElementById('inv_name').value.trim();
+  if(!name){alert('⚠ اسم الصنف مطلوب');return;}
+  const regionId=document.getElementById('inv_region').value;
+  const wsEl=document.getElementById('inv_ws');
+  const wsId=wsEl.value;
+  const wsName=wsEl.options[wsEl.selectedIndex]?.text||'';
+  if(!wsId){alert('⚠ الرجاء اختيار الورشة (المستودع)');return;}
+  const wsInvObj=WORKSHOPS[regionId]?.find(w=>w.id===wsId);
+  const wsInvFullName=wsInvObj?(wsInvObj.name+(wsInvObj.workshopLabel?' — '+wsInvObj.workshopLabel:'')):wsName;
+  const inv=load(KEYS.inv)||[];
+  const editId=document.getElementById('inv_editId').value;
+  const data={
+    name,category:document.getElementById('inv_cat').value,
+    quantity:parseInt(document.getElementById('inv_qty').value)||0,
+    minQty:parseInt(document.getElementById('inv_min').value)||5,
+    unit:document.getElementById('inv_unit').value,
+    cost:parseFloat(document.getElementById('inv_cost').value)||0,
+    location:document.getElementById('inv_loc').value,
+    regionId,workshopId:wsId,workshopName:wsInvFullName,
+    notes:document.getElementById('inv_notes').value,
+    updatedAt:today()
+  };
+  if(editId){
+    const idx=inv.findIndex(i=>i.id===editId);
+    if(idx>-1){inv[idx]={...inv[idx],...data};}
+    document.getElementById('inv_editId').value='';
+  } else {
+    inv.push({id:`PART-${String(inv.length+1).padStart(3,'0')}`,createdAt:today(),...data});
+  }
+  save(KEYS.inv,inv);
+  closeModal('invAddModal');
+  renderInv();updateInvCats();renderDashboard();
+  document.getElementById('invModalTitle').textContent='إضافة صنف جديد';
+}
+
+function deleteInv(id){
+  showConfirm('هل تريد حذف هذا الصنف من المستودع نهائياً؟',()=>{
+    save(KEYS.inv,(load(KEYS.inv)||[]).filter(i=>i.id!==id));
+    renderInv();updateInvCats();renderDashboard();
+  });
+}
+
+function quickMovIn(id){
+  populateMovSelects();
+  document.getElementById('movin_item').value=id;
+  document.getElementById('movin_date').value=today();
+  openModal('movInModal');
+}
+function quickMovOut(id){
+  populateMovSelects();
+  document.getElementById('movout_item').value=id;
+  document.getElementById('movout_date').value=today();
+  openModal('movOutModal');
+}
+function quickMovRet(id){
+  populateMovSelects();
+  document.getElementById('movret_item').value=id;
+  document.getElementById('movret_date').value=today();
+  openModal('movRetModal');
+}
+
+// ===================================================================
+// MOVEMENTS
+// ===================================================================
+let movTab='all';
+function setMovTab(t){
+  movTab=t;
+  document.querySelectorAll('#page-movements .page-tab').forEach((b,i)=>{
+    b.classList.toggle('active',['all','in','out','return'][i]===t);
+  });
+  renderMovements();
+}
+
+function movItem(m){
+  const icons={in:'↓',out:'↑',return:'↩'};
+  const cls={in:'mov-in',out:'mov-out',return:'mov-ret'};
+  const labels={in:'إدخال',out:'إخراج',return:'إرجاع'};
+  return `<div class="mov-item">
+    <div class="mov-icon ${cls[m.type]||'mov-in'}">${icons[m.type]||'↕'}</div>
+    <div class="mov-info">
+      <div class="mov-name">${m.itemName||'—'}</div>
+      <div class="mov-detail">${labels[m.type]||'—'} • ${m.date} ${m.equipmentId?'• معدة: '+m.equipmentId:''} ${m.workOrderId?'• أمر: '+m.workOrderId:''} ${m.note?'• '+m.note:''}</div>
+    </div>
+    <div class="mov-qty" style="color:${m.type==='in'?'var(--green)':m.type==='return'?'var(--amber)':'var(--red)'}">
+      ${m.type==='in'?'+':m.type==='return'?'+':'-'}${m.qty} ${m.unit||''}
+    </div>
+  </div>`;
+}
+
+function renderMovements(){
+  let movs=load(KEYS.mov)||[];
+  // Filter by global region/workshop
+  if(gWs!=='all') movs=movs.filter(m=>{
+    const inv=(load(KEYS.inv)||[]).find(i=>i.id===m.itemId);
+    return inv&&inv.workshopId===gWs;
+  });
+  else if(gRegion!=='all') movs=movs.filter(m=>{
+    const inv=(load(KEYS.inv)||[]).find(i=>i.id===m.itemId);
+    return inv&&inv.regionId===gRegion;
+  });
+  if(movTab!=='all') movs=movs.filter(m=>m.type===movTab);
+  movs=[...movs].reverse();
+  document.getElementById('movList').innerHTML=movs.length
+    ? movs.map(m=>movItem(m)).join('')
+    : '<p style="color:var(--text3);padding:20px;text-align:center">لا توجد حركات لهذه الورشة بعد</p>';
+}
+
+function saveMovIn(){
+  const itemId=document.getElementById('movin_item').value;
+  const qty=parseInt(document.getElementById('movin_qty').value)||0;
+  if(!itemId||qty<=0){alert('⚠ اختر الصنف والكمية');return;}
+  const inv=load(KEYS.inv)||[];
+  const idx=inv.findIndex(i=>i.id===itemId);
+  if(idx<0){alert('الصنف غير موجود');return;}
+  inv[idx].quantity+=qty;inv[idx].updatedAt=today();
+  save(KEYS.inv,inv);
+  const movs=load(KEYS.mov)||[];
+  movs.push({id:uid(),type:'in',itemId,itemName:inv[idx].name,unit:inv[idx].unit,
+    qty,src:document.getElementById('movin_src').value,
+    date:document.getElementById('movin_date').value||today(),
+    note:document.getElementById('movin_note').value,by:currentUser.name});
+  save(KEYS.mov,movs);
+  closeModal('movInModal');renderMovements();renderInv();renderDashboard();
+  ['movin_item','movin_src','movin_note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('movin_qty').value=1;
+}
+
+function saveMovOut(){
+  const itemId=document.getElementById('movout_item').value;
+  const qty=parseInt(document.getElementById('movout_qty').value)||0;
+  if(!itemId||qty<=0){alert('⚠ اختر الصنف والكمية');return;}
+  const inv=load(KEYS.inv)||[];
+  const idx=inv.findIndex(i=>i.id===itemId);
+  if(idx<0){alert('الصنف غير موجود');return;}
+  if(inv[idx].quantity<qty){alert(`⚠ الكمية المتاحة ${inv[idx].quantity} فقط`);return;}
+  inv[idx].quantity-=qty;inv[idx].updatedAt=today();
+  save(KEYS.inv,inv);
+  const eqid=document.getElementById('movout_eqid').value.trim();
+  const woSel=document.getElementById('movout_wo');
+  const woId=woSel.value;
+  // Auto-link to work order if equipment ID matches
+  let linkedWOId=woId;
+  if(eqid&&!woId){
+    const wos=load(KEYS.wo)||[];
+    const linked=wos.find(w=>w.equipmentId===eqid&&(w.status==='قيد التنفيذ'||w.status==='طارئ'));
+    if(linked) linkedWOId=linked.id;
+  }
+  const movs=load(KEYS.mov)||[];
+  movs.push({id:uid(),type:'out',itemId,itemName:inv[idx].name,unit:inv[idx].unit,
+    qty,equipmentId:eqid,workOrderId:linkedWOId,
+    tech:document.getElementById('movout_tech').value,
+    date:document.getElementById('movout_date').value||today(),
+    note:document.getElementById('movout_note').value,by:currentUser.name});
+  save(KEYS.mov,movs);
+  closeModal('movOutModal');renderMovements();renderInv();renderDashboard();
+  ['movout_item','movout_eqid','movout_tech','movout_note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('movout_qty').value=1;document.getElementById('movout_wo').value='';
+}
+
+function saveMovRet(){
+  const itemId=document.getElementById('movret_item').value;
+  const qty=parseInt(document.getElementById('movret_qty').value)||0;
+  if(!itemId||qty<=0){alert('⚠ اختر الصنف والكمية');return;}
+  const inv=load(KEYS.inv)||[];
+  const idx=inv.findIndex(i=>i.id===itemId);
+  if(idx<0){alert('الصنف غير موجود');return;}
+  inv[idx].quantity+=qty;inv[idx].updatedAt=today();
+  save(KEYS.inv,inv);
+  const movs=load(KEYS.mov)||[];
+  movs.push({id:uid(),type:'return',itemId,itemName:inv[idx].name,unit:inv[idx].unit,
+    qty,equipmentId:document.getElementById('movret_eqid').value,
+    date:document.getElementById('movret_date').value||today(),
+    note:document.getElementById('movret_note').value,by:currentUser.name});
+  save(KEYS.mov,movs);
+  closeModal('movRetModal');renderMovements();renderInv();renderDashboard();
+  ['movret_item','movret_eqid','movret_note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('movret_qty').value=1;
+}
+
+// ===================================================================
+// EMPLOYEES
+// ===================================================================
+function renderEmp(){
+  const emps=load(KEYS.emp)||[];
+  const q=document.getElementById('empSearch')?.value.toLowerCase()||'';
+  const reg=document.getElementById('empRegFilter')?.value||'all';
+  const st=document.getElementById('empStatusFilter')?.value||'all';
+  let filtered=emps.filter(e=>
+    (reg==='all'||e.regionId===reg)&&
+    (st==='all'||e.status===st)&&
+    (!q||e.name.toLowerCase().includes(q)||e.role.toLowerCase().includes(q))
+  );
+  const stColors={'متاح':'var(--green)','إجازة':'var(--amber)','مهمة خارجية':'var(--blue)'};
+  // Stats row
+  document.getElementById('empStats').innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap">
+    ${Object.entries(stColors).map(([s,c])=>`
+      <div style="background:var(--bg2);border:1px solid ${c}33;border-radius:8px;padding:8px 16px;display:flex;gap:8px;align-items:center;cursor:pointer" onclick="document.getElementById('empStatusFilter').value='${s===document.getElementById('empStatusFilter')?.value?'all':s}';renderEmp()">
+        <span style="color:${c};font-size:18px;font-weight:800">${emps.filter(e=>e.status===s).length}</span>
+        <span style="font-size:12px;color:var(--text3)">${s}</span>
+      </div>`).join('')}
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 16px;display:flex;gap:8px;align-items:center">
+      <span style="color:var(--text);font-size:18px;font-weight:800">${emps.length}</span>
+      <span style="font-size:12px;color:var(--text3)">إجمالي</span>
+    </div>
+  </div>`;
+  const canEdit=currentUser.role==='admin'||currentUser.role==='supervisor';
+  document.getElementById('empGrid').innerHTML=filtered.map(emp=>{
+    const c=stColors[emp.status]||'var(--text3)';
+    const initial=emp.name.charAt(0);
+    return `<div class="tech-card" onclick="openEmpDetail('${emp.id}')">
+      <div class="tech-avatar" style="border-color:${c}">${initial}</div>
+      <span class="badge" style="background:${c}20;color:${c};margin-bottom:8px">${emp.status}</span>
+      <div class="tech-name">${emp.name}</div>
+      <div class="tech-role">${emp.role}</div>
+      <div class="tech-ws">${emp.workshopName}</div>
+      <div class="tech-meta">
+        <span>✓ ${emp.completedOrders||0}</span>
+        <span>★ ${emp.rating||'—'}</span>
+        <span>${emp.experience||0} سنة</span>
+      </div>
+      ${canEdit?`<div style="display:flex;gap:4px;margin-top:10px;justify-content:center">
+        <button class="btn btn-amber btn-sm" onclick="event.stopPropagation();editEmp('${emp.id}')">✏</button>
+        <button class="btn btn-blue btn-sm" onclick="event.stopPropagation();openTransfer('${emp.id}')">🔄 نقل</button>
+        <button class="btn btn-red btn-sm" onclick="event.stopPropagation();deleteEmp('${emp.id}')">🗑</button>
+      </div>`:''}
+    </div>`;
+  }).join('')||'<p style="color:var(--text3);padding:20px">لا توجد نتائج</p>';
+}
+
+function openEmpDetail(id){
+  const emp=(load(KEYS.emp)||[]).find(e=>e.id===id);
+  if(!emp) return;
+  const wos=(load(KEYS.wo)||[]).filter(w=>w.techName===emp.name);
+  const stC={'متاح':'var(--green)','إجازة':'var(--amber)','مهمة خارجية':'var(--blue)'};
+  document.getElementById('empDetailTitle').textContent='ملف الموظف — '+emp.name;
+  document.getElementById('empDetailBody').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      ${[['الاسم',emp.name],['الكود',emp.id],['التخصص',emp.role],
+        ['المنطقة',emp.regionName],['الورشة',emp.workshopName],
+        ['الحالة',`<span style="color:${stC[emp.status]||'var(--text3)'}">${emp.status}</span>`],
+        ['الهاتف',emp.phone||'—'],['المستوى',emp.level||'فني'],
+        ['الخبرة',emp.experience+' سنة'],['الأوامر المنجزة',emp.completedOrders||0],
+        ['التقييم',(emp.rating||'—')+' / 5'],
+      ].map(([k,v])=>`<div style="background:var(--bg3);border-radius:8px;padding:10px">
+        <div style="font-size:11px;color:var(--text3);margin-bottom:3px">${k}</div>
+        <div style="font-size:14px;font-weight:600;color:var(--text)">${v||'—'}</div>
+      </div>`).join('')}
+    </div>
+    <div style="background:var(--bg3);border-radius:10px;padding:12px">
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-weight:700">الأوامر الجارية</div>
+      ${wos.filter(w=>w.status==='قيد التنفيذ').length?
+        wos.filter(w=>w.status==='قيد التنفيذ').map(wo=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:5px 0;border-bottom:1px solid var(--border)">
+          <span style="color:var(--blue)">${wo.id}</span><span>${wo.equipment}</span>
+          <span style="color:var(--green)">${wo.progress}%</span>
+        </div>`).join('')
+        :'<p style="color:var(--text3);font-size:12px">لا توجد أوامر جارية</p>'}
+    </div>`;
+  const canEdit=currentUser.role==='admin'||currentUser.role==='supervisor';
+  document.getElementById('empDetailFooter').innerHTML=
+    `${canEdit?`<button class="btn btn-amber btn-sm" onclick="closeModal('empDetailModal');editEmp('${emp.id}')">✏ تعديل</button>
+    <button class="btn btn-blue btn-sm" onclick="closeModal('empDetailModal');openTransfer('${emp.id}')">🔄 نقل</button>
+    <button class="btn btn-red btn-sm" onclick="closeModal('empDetailModal');deleteEmp('${emp.id}')">🗑 حذف</button>`:''}
+    <button class="btn btn-blue" onclick="closeModal('empDetailModal')">إغلاق</button>`;
+  openModal('empDetailModal');
+}
+
+function editEmp(id){
+  const emp=(load(KEYS.emp)||[]).find(e=>e.id===id);
+  if(!emp) return;
+  document.getElementById('empModalTitle').textContent='تعديل بيانات — '+emp.name;
+  document.getElementById('emp_name').value=emp.name;
+  document.getElementById('emp_role').value=emp.role;
+  document.getElementById('emp_region').value=emp.regionId;
+  updateEmpWorkshops();
+  setTimeout(()=>{document.getElementById('emp_ws').value=emp.workshopId;},50);
+  document.getElementById('emp_status').value=emp.status;
+  document.getElementById('emp_phone').value=emp.phone||'';
+  document.getElementById('emp_level').value=emp.level||'فني';
+  document.getElementById('emp_exp').value=emp.experience||1;
+  document.getElementById('emp_editId').value=id;
+  openModal('empAddModal');
+}
+
+function saveEmp(){
+  const name=document.getElementById('emp_name').value.trim();
+  const role=document.getElementById('emp_role').value;
+  const reg=document.getElementById('emp_region').value;
+  const ws=document.getElementById('emp_ws').value;
+  if(!name||!role||!reg||!ws){alert('⚠ الرجاء ملء الحقول الإلزامية');return;}
+  const wsObj2=WORKSHOPS[reg]?.find(w=>w.id===ws);
+  const wsFullName2=wsObj2?(wsObj2.name+(wsObj2.workshopLabel?' — '+wsObj2.workshopLabel:'')):ws;
+  const emps=load(KEYS.emp)||[];
+  const editId=document.getElementById('emp_editId').value;
+  const data={
+    name,role,regionId:reg,regionName:REGION_NAMES[reg],
+    workshopId:ws,workshopName:wsFullName2,
+    status:document.getElementById('emp_status').value,
+    phone:document.getElementById('emp_phone').value,
+    level:document.getElementById('emp_level').value,
+    experience:parseInt(document.getElementById('emp_exp').value)||1,
+  };
+  if(editId){
+    const idx=emps.findIndex(e=>e.id===editId);
+    if(idx>-1) emps[idx]={...emps[idx],...data};
+    document.getElementById('emp_editId').value='';
+  } else {
+    emps.push({id:`EMP-${String(emps.length+1).padStart(3,'0')}`,
+      completedOrders:0,rating:'4.0',createdAt:today(),...data});
+  }
+  save(KEYS.emp,emps);closeModal('empAddModal');renderEmp();
+  document.getElementById('empModalTitle').textContent='إضافة موظف جديد';
+}
+
+function deleteEmp(id){
+  showConfirm('هل تريد حذف هذا الموظف نهائياً؟',()=>{
+    save(KEYS.emp,(load(KEYS.emp)||[]).filter(e=>e.id!==id));renderEmp();
+  });
+}
+
+function openTransfer(id){
+  const emp=(load(KEYS.emp)||[]).find(e=>e.id===id);
+  if(!emp) return;
+  document.getElementById('tr_empId').value=id;
+  document.getElementById('empTransferInfo').innerHTML=
+    `<strong style="color:var(--text)">${emp.name}</strong><br>
+    <span>من: ${emp.workshopName} — ${emp.regionName}</span>`;
+  document.getElementById('tr_region').value='';
+  document.getElementById('tr_ws').innerHTML='<option value="">-- اختر المنطقة أولاً --</option>';
+  document.getElementById('tr_reason').value='';
+  openModal('empTransferModal');
+}
+
+function saveTransfer(){
+  const empId=document.getElementById('tr_empId').value;
+  const reg=document.getElementById('tr_region').value;
+  const ws=document.getElementById('tr_ws').value;
+  if(!reg||!ws){alert('⚠ اختر المنطقة والورشة');return;}
+  const emps=load(KEYS.emp)||[];
+  const idx=emps.findIndex(e=>e.id===empId);
+  if(idx<0) return;
+  const wsObj3=WORKSHOPS[reg]?.find(w=>w.id===ws);
+  const wsFullName3=wsObj3?(wsObj3.name+(wsObj3.workshopLabel?' — '+wsObj3.workshopLabel:'')):ws;
+  emps[idx].regionId=reg;emps[idx].regionName=REGION_NAMES[reg];
+  emps[idx].workshopId=ws;emps[idx].workshopName=wsFullName3;
+  save(KEYS.emp,emps);closeModal('empTransferModal');renderEmp();
+}
+
+function updateEmpWorkshops(){
+  const reg=document.getElementById('emp_region')?.value;
+  const sel=document.getElementById('emp_ws');
+  if(!sel) return;
+  sel.innerHTML='<option value="">-- اختر الورشة --</option>';
+  (WORKSHOPS[reg]||[]).forEach(w=>{
+    const o=document.createElement('option');
+    o.value=w.id;
+    o.textContent=w.name+(w.workshopLabel?' — '+w.workshopLabel:'');
+    sel.appendChild(o);
+  });
+}
+
+function updateTransferWorkshops(){
+  const reg=document.getElementById('tr_region')?.value;
+  const sel=document.getElementById('tr_ws');
+  if(!sel) return;
+  sel.innerHTML='<option value="">-- اختر الورشة --</option>';
+  (WORKSHOPS[reg]||[]).forEach(w=>{
+    const o=document.createElement('option');
+    o.value=w.id;
+    o.textContent=w.name+(w.workshopLabel?' — '+w.workshopLabel:'');
+    sel.appendChild(o);
+  });
+}
+
+function updateWOWorkshops(){
+  const reg=document.getElementById('wo_region')?.value;
+  const sel=document.getElementById('wo_ws');
+  if(!sel) return;
+  sel.innerHTML='<option value="">-- اختر الورشة --</option>';
+  (WORKSHOPS[reg]||[]).forEach(w=>{
+    const o=document.createElement('option');
+    o.value=w.id;
+    o.textContent=w.name+(w.workshopLabel?' — '+w.workshopLabel:'');
+    sel.appendChild(o);
+  });
+  // Also populate tech list from that region
+  const emps=(load(KEYS.emp)||[]).filter(e=>e.regionId===reg);
+  const ts=document.getElementById('wo_tech');
+  if(ts){
+    ts.innerHTML='<option value="">-- اختر الفني --</option>';
+    emps.forEach(e=>{const o=document.createElement('option');o.value=e.name;o.textContent=e.name+' — '+e.role;ts.appendChild(o);});
+  }
+}
+
+// ===================================================================
+// REPORTS
+// ===================================================================
+let rptRange='monthly';
+function setRptRange(r){
+  rptRange=r;
+  document.querySelectorAll('#page-reports .page-tab').forEach((b,i)=>{
+    b.classList.toggle('active',['daily','weekly','monthly','custom'][i]===r);
+  });
+  const cd=document.getElementById('customDates');
+  if(cd) cd.style.display=r==='custom'?'flex':'none';
+  renderReports();
+}
+
+function renderReports(){
+  const wos=filterWOs(load(KEYS.wo)||[]);
+  const emp=load(KEYS.emp)||[];
+  const inv=load(KEYS.inv)||[];
+  const total=wos.length;
+  const done=wos.filter(w=>w.status==='مكتمل').length;
+  const pct=total?Math.round(done/total*100):0;
+  document.getElementById('rptKPIs').innerHTML=[
+    {l:'إجمالي أوامر العمل',v:total,c:'var(--blue)'},
+    {l:'نسبة الإنجاز',v:pct+'%',c:'var(--green)'},
+    {l:'مكتمل',v:done,c:'var(--green)'},
+    {l:'قيد التنفيذ',v:wos.filter(w=>w.status==='قيد التنفيذ').length,c:'var(--amber)'},
+    {l:'إجمالي الفنيين',v:emp.length,c:'var(--purple)'},
+  ].map(k=>`<div class="kpi" style="border-top-color:${k.c}">
+    <div class="kpi-val" style="color:${k.c}">${k.v}</div>
+    <div class="kpi-label">${k.l}</div>
+  </div>`).join('');
+  // Type chart
+  document.getElementById('rptTypeChart').innerHTML=MAINT_TYPES.map(mt=>{
+    const cnt=wos.filter(w=>w.maintType===mt).length;
+    const dn=wos.filter(w=>w.maintType===mt&&w.status==='مكتمل').length;
+    const p=cnt?Math.round(dn/cnt*100):0;
+    return `<div style="margin-bottom:14px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:12px;color:var(--text2)">${mt}</span>
+        <span style="font-size:12px;font-weight:700;color:var(--text)">${dn}/${cnt}</span>
+      </div>
+      <div class="prog-track"><div class="prog-fill" style="width:${p}%"></div></div>
+    </div>`;
+  }).join('');
+  // Region chart
+  document.getElementById('rptRegionChart').innerHTML=Object.entries(REGION_NAMES).map(([rk,rn])=>{
+    const rw=wos.filter(w=>w.regionId===rk);
+    const rd=rw.filter(w=>w.status==='مكتمل').length;
+    const rp=rw.length?Math.round(rd/rw.length*100):0;
+    const re=emp.filter(e=>e.regionId===rk).length;
+    return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
+      <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+        <div><div style="font-size:13px;font-weight:700;color:var(--text)">${rn}</div>
+        <div style="font-size:11px;color:var(--text3)">${rw.length} أمر • ${re} فني</div></div>
+        <strong style="color:var(--green)">${rp}%</strong>
+      </div>
+      <div class="prog-track"><div class="prog-fill" style="width:${rp}%"></div></div>
+    </div>`;
+  }).join('');
+  // Top techs
+  const topT=[...emp].sort((a,b)=>(b.completedOrders||0)-(a.completedOrders||0)).slice(0,5);
+  document.getElementById('rptTopTechs').innerHTML=topT.map((t,i)=>`
+    <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)">
+      <span style="width:26px;height:26px;border-radius:7px;background:${i===0?'#f5a62322':'var(--bg3)'};color:${i===0?'var(--amber)':'var(--text3)'};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px">#${i+1}</span>
+      <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--text)">${t.name}</div>
+      <div style="font-size:11px;color:var(--text3)">${t.role}</div></div>
+      <div style="text-align:left"><div style="color:var(--green);font-weight:700">${t.completedOrders||0}</div>
+      <div style="color:var(--amber);font-size:11px">★ ${t.rating||'—'}</div></div>
+    </div>`).join('');
+  // Detail table
+  document.getElementById('rptTable').innerHTML=
+    `<thead><tr>${['رقم الأمر','المعدة','النوع','المنطقة','الورشة','الفني','البدء','الانتهاء','الحالة','الإنجاز'].map(h=>`<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${wos.map(wo=>`<tr>
+      <td style="color:var(--blue)">${wo.id}</td>
+      <td>${wo.equipment}</td>
+      <td><span class="badge ${MAINT_COLOR[wo.maintType]||'b-gray'}" style="font-size:10px">${wo.maintType}</span></td>
+      <td style="font-size:11px">${wo.regionName}</td>
+      <td style="font-size:11px">${wo.workshopName}</td>
+      <td style="font-size:11px">${wo.techName}</td>
+      <td style="color:var(--text3);font-size:11px">${wo.startDate}</td>
+      <td style="color:var(--text3);font-size:11px">${wo.endDate}</td>
+      <td><span class="badge ${STATUS_COLOR[wo.status]||'b-gray'}" style="font-size:10px">${wo.status}</span></td>
+      <td><div style="display:flex;align-items:center;gap:4px">
+        <div class="prog-track" style="width:50px"><div class="prog-fill" style="width:${wo.progress}%"></div></div>
+        <span class="prog-txt">${wo.progress}%</span></div></td>
+    </tr>`).join('')}</tbody>`;
+}
+
+// ===================================================================
+// DROPDOWNS POPULATION
+// ===================================================================
+function populateDropdowns(){
+  // Equipment types for WO
+  const woEq=document.getElementById('wo_eq');
+  if(woEq){EQ_TYPES.forEach(e=>{const o=document.createElement('option');o.value=e;o.textContent=e;woEq.appendChild(o);});}
+  // Employee roles
+  const empRole=document.getElementById('emp_role');
+  if(empRole){TECH_ROLES.forEach(r=>{const o=document.createElement('option');o.value=r;o.textContent=r;empRole.appendChild(o);});}
+  // Sched workshops — all workshops with full name
+  const schWs=document.getElementById('sch_ws');
+  if(schWs){
+    Object.entries(WORKSHOPS).forEach(([rk,list])=>{
+      const grp=document.createElement('optgroup');
+      grp.label=REGION_NAMES[rk];
+      list.forEach(w=>{
+        const o=document.createElement('option');
+        o.value=w.id;
+        o.textContent=w.name+(w.workshopLabel?' — '+w.workshopLabel:'');
+        grp.appendChild(o);
+      });
+      schWs.appendChild(grp);
+    });
+  }
+  populateMovSelects();
+}
+
+function populateMovSelects(){
+  const allInv=load(KEYS.inv)||[];
+  // Show only items belonging to current selected workshop
+  const inv=allInv.filter(i=>{
+    const mr=gRegion==='all'||i.regionId===gRegion;
+    const mw=gWs==='all'||i.workshopId===gWs;
+    return mr&&mw;
+  });
+  const wos=load(KEYS.wo)||[];
+  ['movin_item','movout_item','movret_item'].forEach(sid=>{
+    const sel=document.getElementById(sid);
+    if(!sel) return;
+    const cur=sel.value;
+    sel.innerHTML='<option value="">-- اختر الصنف --</option>';
+    inv.forEach(i=>{const o=document.createElement('option');o.value=i.id;o.textContent=`${i.name} (متوفر: ${i.quantity} ${i.unit}) — ${i.workshopName||''}`;sel.appendChild(o);});
+    if(cur) sel.value=cur;
+  });
+  const woSel=document.getElementById('movout_wo');
+  if(woSel){
+    woSel.innerHTML='<option value="">-- اختر أمر العمل (اختياري) --</option>';
+    wos.filter(w=>w.status==='قيد التنفيذ'||w.status==='طارئ').forEach(w=>{
+      const o=document.createElement('option');o.value=w.id;
+      o.textContent=`${w.id} — ${w.equipment} (${w.equipmentId})`;woSel.appendChild(o);
+    });
+  }
+}
+
+// ===================================================================
+// MODALS
+// ===================================================================
+function openModal(id){
+  const el=document.getElementById(id);
+  if(el){el.classList.add('show');}
+  if(id==='movInModal'||id==='movOutModal'||id==='movRetModal'){
+    populateMovSelects();
+    const dateId={movInModal:'movin_date',movOutModal:'movout_date',movRetModal:'movret_date'}[id];
+    if(dateId&&!document.getElementById(dateId).value)
+      document.getElementById(dateId).value=today();
+  }
+  if(id==='woModal'){
+    updateWOWorkshops();
+  }
+  if(id==='invAddModal'){
+    // Initialize workshop dropdown if region already selected
+    const regEl=document.getElementById('inv_region');
+    if(regEl&&regEl.value) updateInvWorkshops();
+  }
+}
+
+function closeModal(id){
+  const el=document.getElementById(id);
+  if(el) el.classList.remove('show');
+}
+
+document.querySelectorAll('.overlay').forEach(ov=>{
+  ov.addEventListener('click',function(e){if(e.target===this) closeModal(this.id);});
+});
+
+// ===================================================================
+// CONFIRM DIALOG
+// ===================================================================
+function showConfirm(msg,cb){
+  document.getElementById('confirmMsg').textContent=msg;
+  document.getElementById('confirmOkBtn').onclick=()=>{cb();closeModal('confirmModal');};
+  openModal('confirmModal');
+}
+
+// ===================================================================
+// INIT
+// ===================================================================
+window.addEventListener('DOMContentLoaded',()=>{
+  // Save session before version check clears storage
+  const savedSess=load(KEYS.session);
+  checkVersion();
+  // Restore session if it existed
+  if(savedSess) save(KEYS.session,savedSess);
+  seedData();
+  const sess=load(KEYS.session);
+  if(sess&&sess.role&&sess.name){
+    currentUser=sess;
+    currentRoleSet=sess.role;
+    startApp();
+  }
+});
+</script>
+</body>
+</html>
