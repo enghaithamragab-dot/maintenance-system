@@ -936,7 +936,7 @@ function seedData(){
 // ===================================================================
 // SESSION & AUTH
 // ===================================================================
-const CODES={admin:'admin123',supervisor:'sup2025',tech:'tech2025'};
+
 let currentUser={role:'',name:''};
 let currentRoleSet='admin';
 
@@ -963,6 +963,37 @@ async function doLogin(){
     err.textContent = '❌ الرجاء إدخال كود الدخول';
     return;
   }
+  const roleMap = {
+  admin: 'admin',
+  supervisor: 'supervisor',
+  tech: 'technician'
+};
+
+const dbRole = roleMap[currentRoleSet];
+
+const { data, error } = await supabaseClient
+  .from('user_profiles')
+  .select('*')
+  .eq('full_name', name)
+  .eq('role', dbRole)
+  .single();
+
+if (error || !data) {
+  err.style.display = 'block';
+  err.textContent = '❌ المستخدم غير موجود';
+  return;
+}
+
+err.style.display = 'none';
+
+currentUser = {
+  role: currentRoleSet,
+  name: data.full_name,
+  email: data.email
+};
+
+save(KEYS.session,currentUser);
+startApp();
 
   const roleMap = {
     admin: 'admin',
