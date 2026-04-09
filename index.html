@@ -2138,6 +2138,15 @@ console.log("Supabase connection:", data);
 }
 
 testConnection();
+  async function testUsers(){
+  const { data, error } = await supabaseClient
+    .from("user_profiles")
+    .select("*");
+
+  console.log("Users:", data, error);
+}
+
+testUsers();
 
 </script>
 </body>
