@@ -952,49 +952,57 @@ async function doLogin(){
   const err = document.getElementById('loginError');
 
   if(!name){
-    err.style.display='block';
-    err.textContent='❌ الرجاء إدخال اسمك';
+    err.style.display = 'block';
+    err.textContent = '❌ الرجاء إدخال الاسم';
     return;
   }
 
   if(!code){
-    err.style.display='block';
-    err.textContent='❌ الرجاء إدخال كود الدخول';
+    err.style.display = 'block';
+    err.textContent = '❌ الرجاء إدخال كود الدخول';
     return;
   }
 
-  const roleMap={
-    admin:'admin',
-    supervisor:'supervisor',
-    tech:'technician'
+  const roleMap = {
+    admin: 'admin',
+    supervisor: 'supervisor',
+    tech: 'technician'
   };
 
-  const dbRole=roleMap[currentRoleSet];
+  const dbRole = roleMap[currentRoleSet];
 
   const { data, error } = await supabaseClient
     .from('user_profiles')
     .select('*')
-    .eq('full_name',name)
-    .eq('role',dbRole)
+    .eq('full_name', name)
+    .eq('role', dbRole)
     .single();
 
-  if(error || !data){
-    err.style.display='block';
-    err.textContent='❌ المستخدم غير موجود';
+  if (error || !data) {
+    err.style.display = 'block';
+    err.textContent = '❌ المستخدم غير موجود أو الدور غير مطابق';
     return;
   }
 
-  err.style.display='none';
+  if (code !== data.password) {
+    err.style.display = 'block';
+    err.textContent = '❌ كود الدخول غير صحيح';
+    return;
+  }
 
-  currentUser={
-    role:currentRoleSet,
-    name:data.full_name,
-    email:data.email
+  err.style.display = 'none';
+
+  currentUser = {
+    role: currentRoleSet,
+    name: data.full_name,
+    email: data.email,
+    profileId: data.id
   };
 
-  save(KEYS.session,currentUser);
+  save(KEYS.session, currentUser);
   startApp();
 }
+
 function doLogout(){
   localStorage.removeItem(KEYS.session);
   document.getElementById('app').style.display='none';
@@ -2117,28 +2125,23 @@ window.addEventListener('DOMContentLoaded',()=>{
     startApp();
   }
 });
-</script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-
 const supabaseUrl = "https://yecxtatudmnemeceaotl.supabase.co";
 const supabaseKey = "sb_publishable_EJ8ehD7Gmmf5_RntDS9Oeg_aTQNrouZ";
 
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 async function testConnection(){
+  const { data, error } = await supabaseClient
+    .from("workshops")
+    .select("*");
 
-const { data, error } = await supabaseClient
-.from("workshops")
-.select("*");
-
-console.log("Supabase connection:", data);
-
+  console.log("Supabase connection:", data);
 }
 
-testConnection();
-  async function testUsers(){
+async function testUsers(){
   const { data, error } = await supabaseClient
     .from("user_profiles")
     .select("*");
@@ -2146,6 +2149,7 @@ testConnection();
   console.log("Users:", data, error);
 }
 
+testConnection();
 testUsers();
 
 </script>
