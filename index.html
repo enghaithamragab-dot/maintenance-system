@@ -854,7 +854,7 @@ async function loadWorkOrdersFromSupabase(){
       equipment_id,
       assigned_to,
       workshops(name, region),
-      equipment(equipment_code, name),
+      equipment(name),
       assigned_user:employees!work_orders_assigned_to_fkey(full_name)
     `)
     .order('created_at', { ascending: false });
