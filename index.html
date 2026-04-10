@@ -2259,24 +2259,31 @@ window.addEventListener('DOMContentLoaded', async ()=>{
 
 <script>
 const supabaseUrl = "https://yecxtatudmnemeceaotl.supabase.co";
-const supabaseKey = "YOUR_KEY";
+const supabaseKey = "sb_publishable_EJ8ehD7Gmmf5_RntDS9Oeg_aTQNrouZ";
 
 window.supabaseClient = window.supabase.createClient(
   supabaseUrl,
-  supabaseKey
+  supabaseKey,
+  {
+    auth: {
+      persistSession: false
+    }
+  }
 );
 
-async function testConnection(){
+async function testConnection() {
   const { data, error } = await window.supabaseClient
     .from("workshops")
     .select("*");
+
   console.log("Supabase connection:", data, error);
 }
 
-async function testUsers(){
+async function testUsers() {
   const { data, error } = await window.supabaseClient
     .from("employees")
     .select("*");
+
   console.log("Users:", data, error);
 }
 
