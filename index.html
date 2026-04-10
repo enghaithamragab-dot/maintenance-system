@@ -836,52 +836,52 @@ async function loadLookupsFromSupabase(){
   DB.users = userRes.data || [];
 }
 async function loadWorkOrdersFromSupabase() {
+
   const { data, error } = await window.supabaseClient
     .from('work_orders')
     .select(`
       id,
       title,
       description,
-      maintenance_type,
-      priority,
-      status,
-      progress,
-      start_date,
-      due_date,
-      completed_at,
-      workshop_id,
       equipment_id,
       assigned_to,
-      workshops(name, region),
       equipment(name),
       assigned_user:employees!work_orders_assigned_to_fkey(name)
     `)
-    .order('created_at', { ascending: false });
+    .order('id');
 
   if (error) {
-    console.error('loadWorkOrdersFromSupabase error:', error);
+    console.error("loadWorkOrders error:", error);
     return [];
   }
 
   DB.workOrders = (data || []).map((row, index) => ({
-    id: row.id || `WO-${String(index + 1).padStart(3, '0')}`,
+    id: row.id || `WO-${index+1}`,
     dbId: row.id,
-    equipment: row.equipment?.name || 'غير محدد',
-    equipmentId: row.equipment_id || '',
-    maintType: mapMaintTypeFromDb(row.maintenance_type),
-    status: mapStatusFromDb(row.status),
-    priority: mapPriorityFromDb(row.priority),
-    regionId: row.workshops?.region || '',
-    regionName: mapRegionName(row.workshops?.region),
-    workshopId: row.workshop_id || '',
-    workshopName: row.workshops?.name || '',
-    techName: row.assigned_user?.name || 'غير محدد',
-    description: row.description || '',
-    startDate: row.start_date || '',
-    endDate: row.due_date || '',
-    progress: row.progress || 0,
-    notes: row.title || '',
-    createdAt: row.start_date || ''
+
+    equipment: row.equipment?.name || "غير محدد",
+    equipmentId: row.equipment_id || "",
+
+    maintType: "صيانة تصحيحية",
+    status: "قيد التنفيذ",
+    priority: "عادي",
+
+    regionId: "",
+    regionName: "",
+
+    workshopId: "",
+    workshopName: "",
+
+    techName: row.assigned_user?.name || "غير محدد",
+
+    description: row.description || "",
+
+    startDate: "",
+    endDate: "",
+    progress: 0,
+
+    notes: row.title || "",
+    createdAt: ""
   }));
 
   return DB.workOrders;
