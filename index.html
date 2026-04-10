@@ -828,7 +828,7 @@ async function loadLookupsFromSupabase(){
   const [wsRes, eqRes, userRes] = await Promise.all([
     window.supabaseClient.from('workshops').select('*').order('name'),
     window.supabaseClient.from('equipment').select('*').order('name'),
-    window.supabaseClient.from('user_profiles').select('id,full_name,role,email,workshop_id').order('full_name')
+    window.supabaseClient.from('employees').select('id,name,role,workshop_id,phone').order('name')
   ]);
 
   DB.workshops = wsRes.data || [];
@@ -1090,10 +1090,10 @@ async function doLogin(){
 
   const dbRole = roleMap[currentRoleSet];
 
-  const { data, error } = await supabaseClient
-    .from('user_profiles')
+  const { data, error } = await window.supabaseClient
+    .from('employees')
     .select('*')
-    .eq('full_name', name)
+    .eq('name', name)
     .eq('role', dbRole)
     .single();
 
@@ -1113,9 +1113,10 @@ async function doLogin(){
 
   currentUser = {
     role: currentRoleSet,
-    name: data.full_name,
-    email: data.email,
-    profileId: data.id
+    name: data.name,
+    profileId: data.id,
+    workshopId: data.workshop_id || null,
+    phone: data.phone || ''
   };
 
   save(KEYS.session, currentUser);
@@ -2260,27 +2261,24 @@ window.addEventListener('DOMContentLoaded', async ()=>{
 
 <script>
 const supabaseUrl = "https://yecxtatudmnemeceaotl.supabase.co";
-const supabaseKey = "sb_publishable_EJ8ehD7Gmmf5_RntDS9Oeg_aTQNrouZ";
+const supabaseKey = "YOUR_KEY";
 
 window.supabaseClient = window.supabase.createClient(
   supabaseUrl,
   supabaseKey
 );
-</script>
 
 async function testConnection(){
   const { data, error } = await window.supabaseClient
     .from("workshops")
     .select("*");
-
   console.log("Supabase connection:", data, error);
 }
 
 async function testUsers(){
   const { data, error } = await window.supabaseClient
-    .from("user_profiles")
+    .from("employees")
     .select("*");
-
   console.log("Users:", data, error);
 }
 
