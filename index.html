@@ -835,7 +835,7 @@ async function loadLookupsFromSupabase(){
   DB.equipment = eqRes.data || [];
   DB.users = userRes.data || [];
 }
-async function loadWorkOrdersFromSupabase(){
+async function loadWorkOrdersFromSupabase() {
   const { data, error } = await window.supabaseClient
     .from('work_orders')
     .select(`
