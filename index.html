@@ -868,7 +868,7 @@ async function loadWorkOrdersFromSupabase(){
     id: row.order_no,
     dbId: row.id,
     equipment: row.equipment?.name || 'غير محدد',
-    equipmentId: row.equipment?.equipment_code || '',
+    equipmentId: row.equipment_id || '',
     maintType: mapMaintTypeFromDb(row.maintenance_type),
     status: mapStatusFromDb(row.status),
     priority: mapPriorityFromDb(row.priority),
