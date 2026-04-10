@@ -827,7 +827,7 @@ const KEYS = {
 async function loadLookupsFromSupabase(){
   const [wsRes, eqRes, userRes] = await Promise.all([
     window.supabaseClient.from('workshops').select('*').order('name'),
-    window.supabaseClient.from('equipment').select('*').order('equipment_code'),
+    window.supabaseClient.from('equipment').select('*').order('name')
     window.supabaseClient.from('user_profiles').select('id,full_name,role,email,workshop_id').order('full_name')
   ]);
 
