@@ -855,7 +855,7 @@ async function loadWorkOrdersFromSupabase(){
       assigned_to,
       workshops(name, region),
       equipment(name),
-      assigned_user:user_profiles!work_orders_assigned_to_fkey(full_name)
+      assigned_user:employees!work_orders_assigned_to_fkey(name)
     `)
     .order('created_at', { ascending: false });
 
@@ -876,7 +876,7 @@ async function loadWorkOrdersFromSupabase(){
     regionName: mapRegionName(row.workshops?.region),
     workshopId: row.workshop_id || '',
     workshopName: row.workshops?.name || '',
-    techName: row.assigned_user?.full_name || 'غير محدد',
+    techName: row.assigned_user?.name || 'غير محدد',
     description: row.description || '',
     startDate: row.start_date || '',
     endDate: row.due_date || '',
