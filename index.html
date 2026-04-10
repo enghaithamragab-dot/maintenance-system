@@ -888,36 +888,6 @@ async function loadWorkOrdersFromSupabase() {
   return DB.workOrders;
 }
 
-  DB.workOrders = (data || []).map(row => ({
-    id: row.order_no,
-    dbId: row.id,
-    equipment: row.equipment?.name || 'غير محدد',
-    equipmentId: row.equipment_id || '',
-    maintType: mapMaintTypeFromDb(row.maintenance_type),
-    status: mapStatusFromDb(row.status),
-    priority: mapPriorityFromDb(row.priority),
-    regionId: row.workshops?.region || '',
-    regionName: mapRegionName(row.workshops?.region),
-    workshopId: row.workshop_id || '',
-    workshopName: row.workshops?.name || '',
-    techName: row.assigned_user?.full_name || 'غير محدد',
-    description: row.description || '',
-    startDate: row.start_date || '',
-    endDate: row.due_date || '',
-    progress: row.progress || 0,
-    notes: row.title || '',
-    createdAt: row.start_date || ''
-  }));
-
-  return DB.workOrders;
-}
-
-function mapRegionName(region){
-  if(region === 'central') return 'المنطقة الوسطى';
-  if(region === 'western') return 'المنطقة الغربية';
-  if(region === 'eastern') return 'المنطقة الشرقية';
-  return '';
-}
 
 function mapMaintTypeFromDb(v){
   if(v === 'preventive') return 'صيانة وقائية';
