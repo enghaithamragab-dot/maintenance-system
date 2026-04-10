@@ -840,7 +840,6 @@ async function loadWorkOrdersFromSupabase() {
     .from('work_orders')
     .select(`
       id,
-      order_no,
       title,
       description,
       maintenance_type,
@@ -864,8 +863,8 @@ async function loadWorkOrdersFromSupabase() {
     return [];
   }
 
-  DB.workOrders = (data || []).map(row => ({
-    id: row.order_no,
+  DB.workOrders = (data || []).map((row, index) => ({
+    id: row.id || `WO-${String(index + 1).padStart(3, '0')}`,
     dbId: row.id,
     equipment: row.equipment?.name || 'غير محدد',
     equipmentId: row.equipment_id || '',
@@ -887,7 +886,6 @@ async function loadWorkOrdersFromSupabase() {
 
   return DB.workOrders;
 }
-
 
 function mapMaintTypeFromDb(v){
   if(v === 'preventive') return 'صيانة وقائية';
