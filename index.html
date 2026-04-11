@@ -970,6 +970,23 @@ async function startApp(){
   document.getElementById('roleDisplay').textContent = rb[currentUser.role];
   document.getElementById('roleDisplay').className   = 'role-badge '+rc[currentUser.role];
   document.getElementById('nameDisplay').textContent  = currentUser.name;
+  // تقييد الرؤية حسب المستخدم
+if (currentUser.role === 'tech' || currentUser.role === 'supervisor') {
+  gRegion = currentUser.regionId || 'all';
+  gWs = currentUser.workshopId || 'all';
+
+  document.getElementById('regionFilter').value = gRegion;
+  fillWsFilter(gWs);
+  document.getElementById('wsFilter').value = gWs;
+
+  // إخفاء فلاتر الهيدر حتى لا يغيرها
+  document.getElementById('regionFilter').style.display = 'none';
+  document.getElementById('wsFilter').style.display = 'none';
+} else {
+  // المدير يرى كل شيء
+  document.getElementById('regionFilter').style.display = '';
+  document.getElementById('wsFilter').style.display = '';
+}
 
   const canEdit = currentUser.role !== 'tech';
   ['addWOBtn','addSchedBtn','addInvBtn','addEmpBtn'].forEach(id=>{
