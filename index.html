@@ -304,15 +304,16 @@ tr:hover td{background:var(--bg3);}
     </div>
     <div class="hdr-right">
       <div class="hdr-filter">
-        <select class="hdr-select" id="regionFilter" onchange="applyFilters()">
-          <option value="all">🗺 جميع المناطق</option>
-          <option value="central">المنطقة الوسطى</option>
-          <option value="western">المنطقة الغربية</option>
-          <option value="eastern">المنطقة الشرقية</option>
-        </select>
-        <select class="hdr-select" id="wsFilter" onchange="applyFilters()">
-          <option value="all">جميع الورش</option>
-        </select>
+       <select class="hdr-select" id="regionFilter" onchange="applyFilters('region')">
+  <option value="all">🗺 جميع المناطق</option>
+  <option value="central">المنطقة الوسطى</option>
+  <option value="western">المنطقة الغربية</option>
+  <option value="eastern">المنطقة الشرقية</option>
+</select>
+
+<select class="hdr-select" id="wsFilter" onchange="applyFilters('workshop')">
+  <option value="all">جميع الورش</option>
+</select>
       </div>
       <div class="user-chip">
         <span id="roleDisplay" class="role-badge"></span>
@@ -990,23 +991,38 @@ async function startApp(){
 // ===================================================================
 // FILTERS
 // ===================================================================
-function fillWsFilter(){
+function fillWsFilter(selectedWs = 'all'){
   const sel = document.getElementById('wsFilter');
   sel.innerHTML = '<option value="all">جميع الورش</option>';
-  const r    = document.getElementById('regionFilter').value;
-  const list = r==='all' ? Object.values(WORKSHOPS).flat() : (WORKSHOPS[r]||[]);
-  list.forEach(w=>{
-    const o=document.createElement('option');
-    o.value=w.id;
-    o.textContent=w.name+(w.workshopLabel?' — '+w.workshopLabel:'');
+
+  const r = document.getElementById('regionFilter').value;
+  const list = r === 'all' ? Object.values(WORKSHOPS).flat() : (WORKSHOPS[r] || []);
+
+  list.forEach(w => {
+    const o = document.createElement('option');
+    o.value = w.id;
+    o.textContent = w.name + (w.workshopLabel ? ' — ' + w.workshopLabel : '');
     sel.appendChild(o);
   });
+
+  const exists = [...sel.options].some(opt => opt.value === selectedWs);
+  sel.value = exists ? selectedWs : 'all';
 }
-function applyFilters(){
-  gRegion = document.getElementById('regionFilter').value;
-  gWs     = document.getElementById('wsFilter').value;
-  fillWsFilter();
-  refreshAll();
+function applyFilters(changedBy = ''){
+  const regionValue = document.getElementById('regionFilter').value;
+  const wsValueBefore = document.getElementById('wsFilter').value;
+
+  gRegion = regionValue;
+
+  if (changedBy === 'region') {
+    fillWsFilter('all');
+    gWs = 'all';
+  } else {
+    fillWsFilter(wsValueBefore);
+    gWs = document.getElementById('wsFilter').value;
+  }
+
+  refreshCurrentPage();
 }
 function filterWOs(list){
   return list.filter(w=>{
