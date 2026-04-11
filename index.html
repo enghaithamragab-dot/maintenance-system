@@ -854,7 +854,9 @@ function mapSch(r){ return {
   period: r.period || 'شهري',
   nextDate: r.next_date || '',
   tech: r.tech || '',
+  workshopId: r.workshop_id || '',
   workshopName: r.workshop_name || '',
+  regionId: r.region_id || '',
   status: r.status || 'مجدول'
 };}
 
@@ -939,13 +941,13 @@ async function doLogin(){
     err.style.display='block'; err.textContent='❌ كود الدخول غير صحيح';
     return;
   }
-  currentUser = {
-    role: currentRoleSet,
-    name: data.name,
-    id: data.id,
-    workshopId: data.workshop_id || null,
-    regionId: data.region_id || null
-  };
+ currentUser = {
+  role: currentRoleSet,
+  name: data.name,
+  id: data.id,
+  workshopId: data.workshop_id || null,
+  regionId: data.region_id || null
+};
   sessionStorage.setItem('maint_session', JSON.stringify(currentUser));
   await startApp();
 }
@@ -1300,55 +1302,79 @@ function deleteWO(id){
 // SCHEDULE
 // ===================================================================
 function renderSched(){
-  const scheds = DATA.schedules;
-  const st = {مجدول:0,قريب:0,متأخر:0};
-  scheds.forEach(s=>{ if(st[s.status]!==undefined) st[s.status]++; });
-  document.getElementById('schedKPIs').innerHTML=[
+  let scheds = DATA.schedules.filter(s =>
+    (gRegion === 'all' || s.regionId === gRegion) &&
+    (gWs === 'all' || s.workshopId === gWs)
+  );
+
+  const st = {مجدول:0, قريب:0, متأخر:0};
+  scheds.forEach(s => { if (st[s.status] !== undefined) st[s.status]++; });
+
+  document.getElementById('schedKPIs').innerHTML = [
     {l:'إجمالي المجدول',v:scheds.length,c:'var(--blue)'},
     {l:'قريب الموعد',v:st['قريب'],c:'var(--amber)'},
     {l:'متأخر',v:st['متأخر'],c:'var(--red)'},
-    {l:'صيانة وقائية مكتملة',v:DATA.workOrders.filter(w=>w.maintType==='صيانة وقائية'&&w.status==='مكتمل').length,c:'var(--green)'},
-  ].map(k=>`<div class="kpi" style="border-top-color:${k.c}">
+    {l:'صيانة وقائية مكتملة',v:filterWOs(DATA.workOrders).filter(w => w.maintType === 'صيانة وقائية' && w.status === 'مكتمل').length,c:'var(--green)'},
+  ].map(k => `<div class="kpi" style="border-top-color:${k.c}">
     <div class="kpi-val" style="color:${k.c}">${k.v}</div>
     <div class="kpi-label">${k.l}</div></div>`).join('');
 
   const canEdit = currentUser.role !== 'tech';
-  document.getElementById('schedTable').innerHTML=
-    `<thead><tr>${['المعدة','الفترة','التاريخ القادم','الفني','الورشة','الحالة','إجراء'].map(h=>`<th>${h}</th>`).join('')}</tr></thead>
-    <tbody>${scheds.map(s=>`<tr>
+  document.getElementById('schedTable').innerHTML =
+    `<thead><tr>${['المعدة','الفترة','التاريخ القادم','الفني','الورشة','الحالة','إجراء'].map(h => `<th>${h}</th>`).join('')}</tr></thead>
+    <tbody>${scheds.map(s => `<tr>
       <td style="color:var(--text);font-weight:600">${s.equipment}</td>
       <td><span class="badge b-blue">${s.period}</span></td>
       <td style="color:var(--text2)">${s.nextDate}</td>
       <td>${s.tech}</td>
-      <td style="font-size:11px">${s.workshopName||'—'}</td>
-      <td><span class="badge ${STATUS_COLOR[s.status]||'b-gray'}">${s.status}</span></td>
-      <td>${canEdit?`<button class="btn btn-red btn-sm" onclick="deleteSched('${s.id}')">حذف</button>`:'—'}</td>
-    </tr>`).join('')||'<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">لا توجد بيانات</td></tr>'}</tbody>`;
+      <td style="font-size:11px">${s.workshopName || '—'}</td>
+      <td><span class="badge ${STATUS_COLOR[s.status] || 'b-gray'}">${s.status}</span></td>
+      <td>${canEdit ? `<button class="btn btn-red btn-sm" onclick="deleteSched('${s.id}')">حذف</button>` : '—'}</td>
+    </tr>`).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--text3);padding:30px">لا توجد بيانات</td></tr>'}</tbody>`;
 }
-
 async function saveSched(){
   const eq = document.getElementById('sch_eq').value.trim();
   const nd = document.getElementById('sch_next').value;
-  if(!eq||!nd){ showToast('⚠ المعدة والتاريخ مطلوبان','error'); return; }
+  if(!eq || !nd){
+    showToast('⚠ المعدة والتاريخ مطلوبان', 'error');
+    return;
+  }
+
   const wsEl = document.getElementById('sch_ws');
-  const wsName = wsEl.options[wsEl.selectedIndex]?.text||'';
-  const diff = Math.ceil((new Date(nd)-new Date())/(1000*60*60*24));
-  const status = diff<0?'متأخر':diff<=7?'قريب':'مجدول';
+  const wsId = wsEl.value;
+  const wsName = wsEl.options[wsEl.selectedIndex]?.text || '';
+
+  if(!wsId){
+    showToast('⚠ الرجاء اختيار الورشة', 'error');
+    return;
+  }
+
+  const diff = Math.ceil((new Date(nd) - new Date()) / (1000 * 60 * 60 * 24));
+  const status = diff < 0 ? 'متأخر' : diff <= 7 ? 'قريب' : 'مجدول';
 
   setBtnLoading('saveSchedBtn', true, '✓ حفظ');
-  const {error} = await sb.from('schedules').insert({
+  const { error } = await sb.from('schedules').insert({
     equipment: eq,
     period: document.getElementById('sch_period').value,
     next_date: nd,
     tech: document.getElementById('sch_tech').value,
+    workshop_id: wsId,
     workshop_name: wsName,
+   region_id: wsId.startsWith('c-') ? 'central' :
+           wsId.startsWith('w-') ? 'western' :
+           wsId.startsWith('e-') ? 'eastern' : '',
     status
   });
   setBtnLoading('saveSchedBtn', false, '✓ حفظ');
-  if(error){ showToast('❌ '+error.message,'error'); return; }
+
+  if(error){
+    showToast('❌ ' + error.message, 'error');
+    return;
+  }
+
   showToast('✅ تم إضافة الموعد');
   closeModal('schedModal');
-  ['sch_eq','sch_next','sch_tech'].forEach(id=>document.getElementById(id).value='');
+  ['sch_eq','sch_next','sch_tech'].forEach(id => document.getElementById(id).value = '');
 }
 
 function deleteSched(id){
@@ -1638,41 +1664,54 @@ async function saveMovRet(){
 // ===================================================================
 function renderEmp(){
   const emps = DATA.employees;
-  const q    = document.getElementById('empSearch')?.value.toLowerCase()||'';
-  const reg  = document.getElementById('empRegFilter')?.value||'all';
-  const st   = document.getElementById('empStatusFilter')?.value||'all';
-  let filtered = emps.filter(e=>
-    (reg==='all'||e.regionId===reg)&&
-    (st==='all'||e.status===st)&&
-    (!q||e.name.toLowerCase().includes(q)||e.role.toLowerCase().includes(q))
+  const q    = document.getElementById('empSearch')?.value.toLowerCase() || '';
+  const reg  = document.getElementById('empRegFilter')?.value || 'all';
+  const st   = document.getElementById('empStatusFilter')?.value || 'all';
+
+  let filtered = emps.filter(e =>
+    // الفلتر العام من الهيدر
+    (gRegion === 'all' || e.regionId === gRegion) &&
+    (gWs === 'all' || e.workshopId === gWs) &&
+
+    // الفلاتر الخاصة بصفحة الموظفين
+    (reg === 'all' || e.regionId === reg) &&
+    (st === 'all' || e.status === st) &&
+
+    // البحث
+    (!q || e.name.toLowerCase().includes(q) || e.role.toLowerCase().includes(q))
   );
+
   const stColors = {'متاح':'var(--green)','إجازة':'var(--amber)','مهمة خارجية':'var(--blue)'};
-  document.getElementById('empStats').innerHTML=`<div style="display:flex;gap:8px;flex-wrap:wrap">
+
+  document.getElementById('empStats').innerHTML = `<div style="display:flex;gap:8px;flex-wrap:wrap">
     ${Object.entries(stColors).map(([s,c])=>`
       <div style="background:var(--bg2);border:1px solid ${c}33;border-radius:8px;padding:8px 16px;display:flex;gap:8px;align-items:center">
-        <span style="color:${c};font-size:18px;font-weight:800">${emps.filter(e=>e.status===s).length}</span>
+        <span style="color:${c};font-size:18px;font-weight:800">${filtered.filter(e=>e.status===s).length}</span>
         <span style="font-size:12px;color:var(--text3)">${s}</span></div>`).join('')}
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:8px 16px;display:flex;gap:8px;align-items:center">
-      <span style="color:var(--text);font-size:18px;font-weight:800">${emps.length}</span>
+      <span style="color:var(--text);font-size:18px;font-weight:800">${filtered.length}</span>
       <span style="font-size:12px;color:var(--text3)">إجمالي</span></div>
   </div>`;
-  const canEdit = currentUser.role==='admin'||currentUser.role==='supervisor';
-  document.getElementById('empGrid').innerHTML=filtered.map(emp=>{
-    const c = stColors[emp.status]||'var(--text3)';
-    return `<div class="tech-card" onclick="openEmpDetail('${emp.id}')">
-      <div class="tech-avatar" style="border-color:${c}">${emp.name.charAt(0)}</div>
-      <span class="badge" style="background:${c}20;color:${c};margin-bottom:8px">${emp.status}</span>
-      <div class="tech-name">${emp.name}</div>
-      <div class="tech-role">${emp.role}</div>
-      <div class="tech-ws">${emp.workshopName}</div>
-      <div class="tech-meta"><span>✓ ${emp.completedOrders||0}</span><span>★ ${emp.rating||'—'}</span><span>${emp.experience||0} سنة</span></div>
-      ${canEdit?`<div style="display:flex;gap:4px;margin-top:10px;justify-content:center">
-        <button class="btn btn-amber btn-sm" onclick="event.stopPropagation();editEmp('${emp.id}')">✏</button>
-        <button class="btn btn-blue btn-sm" onclick="event.stopPropagation();openTransfer('${emp.id}')">🔄 نقل</button>
-        <button class="btn btn-red btn-sm" onclick="event.stopPropagation();deleteEmp('${emp.id}')">🗑</button>
-      </div>`:''}
-    </div>`;
-  }).join('')||'<p style="color:var(--text3);padding:20px">لا توجد نتائج</p>';
+
+  const canEdit = currentUser.role === 'admin' || currentUser.role === 'supervisor';
+
+  document.getElementById('empGrid').innerHTML = filtered.map(e => `
+    <div class="tech-card">
+      <div class="tech-avatar" style="border-color:${e.status==='متاح'?'var(--green)':e.status==='إجازة'?'var(--amber)':'var(--blue)'}">
+        ${e.name?.charAt(0) || 'م'}
+      </div>
+      <div class="tech-name">${e.name}</div>
+      <div class="tech-role">${e.role}</div>
+      <div class="tech-ws">${e.workshopName || '—'}</div>
+      <div class="tech-meta">
+        <span>${e.level || '—'}</span>
+        <span>${e.experience || 0} سنة</span>
+      </div>
+      <div style="margin-top:10px">
+        <span class="badge ${e.status==='متاح'?'b-green':e.status==='إجازة'?'b-amber':'b-blue'}">${e.status}</span>
+      </div>
+    </div>
+  `).join('') || '<p style="color:var(--text3);text-align:center;padding:20px">لا يوجد موظفون مطابقون للفلاتر</p>';
 }
 
 function openEmpDetail(id){
