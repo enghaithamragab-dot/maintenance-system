@@ -1083,16 +1083,30 @@ function refreshAll(){ renderDashboard(); updateLowStockBadge(); }
 // DASHBOARD
 // ===================================================================
 function renderDashboard(){
-  const wos   = filterWOs(DATA.workOrders);
-  const inv   = DATA.inventory;
-  const emp   = DATA.employees;
-  const movs  = DATA.movements.slice(0,6);
+
+  // بيانات مفلترة حسب المنطقة والورشة
+  const wos = filterWOs(DATA.workOrders);
+
+  const inv = filterInv(DATA.inventory);
+
+  const emp = DATA.employees.filter(e =>
+    (gRegion === 'all' || e.regionId === gRegion) &&
+    (gWs === 'all' || e.workshopId === gWs)
+  );
+
+  const movs = DATA.movements.filter(m => {
+    const item = DATA.inventory.find(i => i.id === m.itemId);
+    return item &&
+      (gRegion === 'all' || item.regionId === gRegion) &&
+      (gWs === 'all' || item.workshopId === gWs);
+  }).slice(0,6);
 
   const total = wos.length;
   const done  = wos.filter(w=>w.status==='مكتمل').length;
   const prog  = wos.filter(w=>w.status==='قيد التنفيذ').length;
   const pend  = wos.filter(w=>w.status==='معلق').length;
   const pct   = total ? Math.round(done/total*100) : 0;
+
   const low   = inv.filter(i=>i.quantity<=i.minQty);
   const avail = emp.filter(e=>e.status==='متاح').length;
 
@@ -1104,25 +1118,44 @@ function renderDashboard(){
     {l:'فنيون متاحون',v:avail,c:'var(--purple)',s:`من ${emp.length}`},
   ].map(k=>`<div class="kpi" style="border-top-color:${k.c}">
     <div class="kpi-val" style="color:${k.c}">${k.v}</div>
-    <div class="kpi-label">${k.l}</div><div class="kpi-sub">${k.s}</div></div>`).join('');
+    <div class="kpi-label">${k.l}</div>
+    <div class="kpi-sub">${k.s}</div>
+  </div>`).join('');
 
-  // Donut
+  // Donut Chart
   const r2=48,cx=60,cy=60,circ=2*Math.PI*r2;
-  const segs=[{v:done,c:'var(--green)',l:'مكتمل'},{v:prog,c:'var(--blue)',l:'جاري'},{v:pend,c:'var(--amber)',l:'معلق'},{v:wos.filter(w=>w.status==='طارئ').length,c:'var(--red)',l:'طارئ'}];
+  const segs=[
+    {v:done,c:'var(--green)',l:'مكتمل'},
+    {v:prog,c:'var(--blue)',l:'جاري'},
+    {v:pend,c:'var(--amber)',l:'معلق'},
+    {v:wos.filter(w=>w.status==='طارئ').length,c:'var(--red)',l:'طارئ'}
+  ];
+
   let off=0;
   const paths=segs.map(s=>{
-    const p2=total?s.v/total:0; const len=p2*circ;
-    const px=`<circle cx="${cx}" cy="${cy}" r="${r2}" fill="none" stroke="${s.c}" stroke-width="12" stroke-dasharray="${len} ${circ-len}" stroke-dashoffset="${-off}" transform="rotate(-90 ${cx} ${cy})"/>`;
-    off+=len; return px;
+    const p2=total?s.v/total:0;
+    const len=p2*circ;
+    const px=`<circle cx="${cx}" cy="${cy}" r="${r2}" fill="none"
+      stroke="${s.c}" stroke-width="12"
+      stroke-dasharray="${len} ${circ-len}"
+      stroke-dashoffset="${-off}"
+      transform="rotate(-90 ${cx} ${cy})"/>`;
+    off+=len;
+    return px;
   }).join('');
+
   document.getElementById('donutChart').innerHTML=
-    `<circle cx="${cx}" cy="${cy}" r="${r2}" fill="none" stroke="var(--bg3)" stroke-width="12"/>${paths}
-    <text x="${cx}" y="${cy-6}" text-anchor="middle" fill="var(--text)" font-size="20" font-weight="900">${pct}%</text>
-    <text x="${cx}" y="${cy+12}" text-anchor="middle" fill="var(--text3)" font-size="10">إنجاز</text>`;
+    `<circle cx="${cx}" cy="${cy}" r="${r2}" fill="none" stroke="var(--bg3)" stroke-width="12"/>
+     ${paths}
+     <text x="${cx}" y="${cy-6}" text-anchor="middle" fill="var(--text)" font-size="20" font-weight="900">${pct}%</text>
+     <text x="${cx}" y="${cy+12}" text-anchor="middle" fill="var(--text3)" font-size="10">إنجاز</text>`;
+
   document.getElementById('donutLegend').innerHTML=segs.map(s=>
-    `<div class="legend-row"><span class="legend-dot" style="background:${s.c}"></span>
-    <span style="color:var(--text2);font-size:12px">${s.l}</span>
-    <strong style="color:${s.c};margin-right:auto;padding-right:10px">${s.v}</strong></div>`).join('');
+    `<div class="legend-row">
+      <span class="legend-dot" style="background:${s.c}"></span>
+      <span style="color:var(--text2);font-size:12px">${s.l}</span>
+      <strong style="color:${s.c};margin-right:auto;padding-right:10px">${s.v}</strong>
+    </div>`).join('');
 
   document.getElementById('typeChart').innerHTML=MAINT_TYPES.map(mt=>{
     const cnt=wos.filter(w=>w.maintType===mt).length;
@@ -1130,46 +1163,64 @@ function renderDashboard(){
     return `<div style="margin-bottom:12px">
       <div style="display:flex;justify-content:space-between;margin-bottom:4px">
         <span style="font-size:12px;color:var(--text2)">${mt}</span>
-        <span style="font-size:12px;font-weight:700;color:var(--text)">${cnt}</span></div>
-      <div class="prog-track"><div class="prog-fill" style="width:${p3}%"></div></div></div>`;
+        <span style="font-size:12px;font-weight:700;color:var(--text)">${cnt}</span>
+      </div>
+      <div class="prog-track">
+        <div class="prog-fill" style="width:${p3}%"></div>
+      </div>
+    </div>`;
   }).join('');
 
-  document.getElementById('regionChart').innerHTML=Object.entries(REGION_NAMES).map(([rk,rn])=>{
+document.getElementById('regionChart').innerHTML = Object.entries(REGION_NAMES)
+  .filter(([rk]) => gRegion === 'all' || rk === gRegion)
+  .map(([rk,rn])=>{
     const rw=wos.filter(w=>w.regionId===rk);
     const rd=rw.filter(w=>w.status==='مكتمل').length;
     const rp=rw.length?Math.round(rd/rw.length*100):0;
     return `<div style="padding:10px 0;border-bottom:1px solid var(--border)">
       <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-        <div><div style="font-size:13px;font-weight:700;color:var(--text)">${rn}</div>
-        <div style="font-size:11px;color:var(--text3)">${rw.length} أمر • ${rp}% منجز</div></div>
-        <span style="font-size:16px;font-weight:900;color:var(--green)">${rp}%</span></div>
-      <div class="prog-track"><div class="prog-fill" style="width:${rp}%"></div></div></div>`;
+        <div>
+          <div style="font-size:13px;font-weight:700;color:var(--text)">${rn}</div>
+          <div style="font-size:11px;color:var(--text3)">${rw.length} أمر • ${rp}% منجز</div>
+        </div>
+        <span style="font-size:16px;font-weight:900;color:var(--green)">${rp}%</span>
+      </div>
+      <div class="prog-track">
+        <div class="prog-fill" style="width:${rp}%"></div>
+      </div>
+    </div>`;
   }).join('');
-
-  document.getElementById('dashWOTable').innerHTML=
+  document.getElementById('dashWOTable').innerHTML =
     `<thead><tr>${['رقم الأمر','المعدة','النوع','الفني','الحالة','الإنجاز'].map(h=>`<th>${h}</th>`).join('')}</tr></thead>
-    <tbody>${wos.slice(0,6).map(wo=>`<tr>
+     <tbody>${wos.slice(0,6).map(wo=>`<tr>
       <td style="color:var(--blue);font-weight:700">${wo.code||wo.id}</td>
       <td>${wo.equipment}</td>
       <td><span class="badge ${MAINT_COLOR[wo.maintType]||'b-gray'}">${wo.maintType}</span></td>
       <td>${wo.techName}</td>
       <td><span class="badge ${STATUS_COLOR[wo.status]||'b-gray'}">${wo.status}</span></td>
-      <td><div style="display:flex;align-items:center;gap:6px">
-        <div class="prog-track" style="width:80px"><div class="prog-fill" style="width:${wo.progress}%"></div></div>
-        <span class="prog-txt">${wo.progress}%</span></div></td>
-    </tr>`).join('')}</tbody>`;
+      <td>
+        <div style="display:flex;align-items:center;gap:6px">
+          <div class="prog-track" style="width:80px">
+            <div class="prog-fill" style="width:${wo.progress}%"></div>
+          </div>
+          <span class="prog-txt">${wo.progress}%</span>
+        </div>
+      </td>
+     </tr>`).join('')}</tbody>`;
 
   document.getElementById('dashLowStock').innerHTML = low.length
     ? low.slice(0,5).map(i=>`<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:13px">
         <span style="color:var(--text)">${i.name}</span>
-        <span style="color:var(--red);font-weight:700">${i.quantity} ${i.unit} <span style="color:var(--text3);font-weight:400">/ حد ${i.minQty}</span></span></div>`).join('')
+        <span style="color:var(--red);font-weight:700">${i.quantity} ${i.unit}
+          <span style="color:var(--text3);font-weight:400">/ حد ${i.minQty}</span>
+        </span>
+      </div>`).join('')
     : '<p style="color:var(--text3);font-size:13px">✅ لا توجد مواد منخفضة</p>';
 
   document.getElementById('dashMovements').innerHTML = movs.length
     ? movs.map(m=>movItemHtml(m)).join('')
     : '<p style="color:var(--text3);font-size:13px">لا توجد حركات بعد</p>';
 }
-
 // ===================================================================
 // WORK ORDERS
 // ===================================================================
