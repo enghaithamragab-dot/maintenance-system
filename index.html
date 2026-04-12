@@ -243,12 +243,70 @@ tr:hover td{background:var(--bg3);}
 .toast.error{border-color:#f04d4d44;color:var(--red);}
 
 /* PRINT */
-@media print{
-  .hdr,.nav,.controls,.modal,.overlay,.btn,.logout-btn{display:none!important;}
-  body{background:#fff;color:#000;}
-  .card{border:1px solid #ccc;}
+  @page{
+  size: A4 landscape;
+  margin: 10mm;
 }
+@media print{
+  .hdr,.nav,.controls,.modal,.overlay,.btn,.logout-btn{
+    display:none !important;
+  }
 
+  html, body{
+    background:#fff !important;
+    color:#000 !important;
+    width:100%;
+    margin:0;
+    padding:0;
+    overflow:visible !important;
+  }
+
+  .main{
+    max-width:100% !important;
+    width:100% !important;
+    margin:0 !important;
+    padding:10mm !important;
+  }
+
+  .page{
+    display:none !important;
+  }
+
+  .page.active{
+    display:block !important;
+  }
+
+  .card{
+    border:1px solid #ccc !important;
+    background:#fff !important;
+    box-shadow:none !important;
+    break-inside:avoid;
+    page-break-inside:avoid;
+    margin-bottom:12px !important;
+  }
+
+  .grid-5,.grid-3,.grid-2{
+    display:block !important;
+  }
+
+  .tbl-wrap{
+    overflow:visible !important;
+  }
+
+  table{
+    width:100% !important;
+    table-layout:auto !important;
+  }
+
+  tr, td, th{
+    page-break-inside:avoid;
+    break-inside:avoid;
+  }
+
+  #rptTable, #rptKPIs, #rptTypeChart, #rptRegionChart, #rptTopTechs{
+    width:100% !important;
+  }
+}
 /* SCROLLBAR */
 ::-webkit-scrollbar{width:6px;height:6px;}
 ::-webkit-scrollbar-track{background:var(--bg);}
